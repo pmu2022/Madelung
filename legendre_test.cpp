@@ -10,7 +10,7 @@ TEST(LegendreTest, Lmax1) {
   int lmax = 1;
   double x = 0.2;
 
-  double *plm = new double[(lmax + 1) * (lmax + 2) / 2];
+  auto *plm = new double[(lmax + 1) * (lmax + 2) / 2];
   legendre(&lmax, &x, plm);
 
 
@@ -30,7 +30,7 @@ TEST(LegendreTest, Lmax2) {
   int lmax = 2;
   double x = 0.2;
 
-  double *plm = new double[(lmax + 1) * (lmax + 2) / 2];
+  auto *plm = new double[(lmax + 1) * (lmax + 2) / 2];
   legendre(&lmax, &x, plm);
 
 
