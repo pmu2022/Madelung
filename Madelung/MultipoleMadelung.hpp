@@ -17,11 +17,10 @@ namespace lsms {
   constexpr auto EPSI = 1e-14;
 
 
-
-  std::tuple<Matrix<double>, Array3d<std::complex<double>>, Matrix<double> > calculate_reduced(int num_atoms,
-                                                                                            int lmax,
-                                                                                            Matrix<double> &bravais,
-                                                                                            Matrix<double> &atom_position);
+  std::tuple<Matrix<double>, Array3d<std::complex<double>>, Matrix<double> > get_madelung(int num_atoms,
+                                                                                          int lmax,
+                                                                                          Matrix<double> &bravais,
+                                                                                          Matrix<double> &atom_position);
 
 
   double calculate_eta(Matrix<double> &brav);

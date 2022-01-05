@@ -776,7 +776,7 @@ Matrix<double> lsms::calculate_dl_factor(int kmax_mad, int jmax_mad, int lmax_ma
 }
 
 std::tuple<Matrix<double>, Array3d<std::complex<double>>, Matrix<double> >
-lsms::calculate_reduced(int num_atoms, int lmax, Matrix<double> &bravais, Matrix<double> &atom_position) {
+lsms::get_madelung(int num_atoms, int lmax, Matrix<double> &bravais, Matrix<double> &atom_position) {
 
 
   int jmax = (lmax + 1) * (lmax + 2) / 2;

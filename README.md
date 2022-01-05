@@ -9,6 +9,14 @@ This is the program that will be used for the C++ programming Course
 Introduction
 ============
 
+Resources
+=========
+
+List of useful `C++` links
+
+- https://www.fluentcpp.com/
+
+- https://www.cppstories.com/
 
 Contribute
 ==========

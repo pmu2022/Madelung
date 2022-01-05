@@ -16,6 +16,24 @@ FetchContent_Declare(
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
+#
+#
+#
+FetchContent_Declare(
+        yaml-cpp
+        GIT_REPOSITORY https://github.com/jbeder/yaml-cpp.git
+        GIT_TAG        0579ae3d976091d7d664aa9d2527e0d0cff25763
+)
+FetchContent_MakeAvailable(yaml-cpp)
+
+
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/config.yaml
+        DESTINATION ${CMAKE_BINARY_DIR}/bin/)
+
+
+
+add_subdirectory(src)
+
 add_subdirectory(Madelung)
 
 add_subdirectory(lib)
