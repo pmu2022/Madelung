@@ -6,7 +6,7 @@
 
 #include "yaml-cpp/yaml.h"
 
-#include "Matrix.hpp"
+#include "common/Matrix.hpp"
 
 
 lsms::MadelungConfig lsms::YAMLConfigFactory::createConfig() {

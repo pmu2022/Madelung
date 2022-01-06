@@ -4,7 +4,7 @@
 
 #include "config.hpp"
 
-#include "Matrix.hpp"
+#include "common/Matrix.hpp"
 
 #include <iostream>
 #include <iomanip>

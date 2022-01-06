@@ -30,7 +30,8 @@
 #include "multipole_madelung.h"
 
 #include "MultipoleMadelung.hpp"
-#include "Lattice.hpp"
+#include "lattice_utils.hpp"
+#include "madelung.hpp"
 
 /**
  * Tests for the development of the Madelung potential
@@ -124,7 +125,7 @@ TEST(MadelungTests, RealSpaceTrunc1) {
 
   std::vector<int> nm(3, 0);
 
-  lsms::real_space_trunc(bravais, lmax, eta, rscut, nm);
+  real_space_trunc(bravais, lmax, eta, rscut, nm);
 
   EXPECT_NEAR(rscut, 12.409243328345438, 1e-6);
 
@@ -146,7 +147,7 @@ TEST(MadelungTests, NumberOfLatticeVectors) {
 
   double rscut = 48.75;
 
-  auto nrslat_diff = lsms::num_latt_vectors(bravais, rscut, nm);
+  auto nrslat_diff = num_latt_vectors(bravais, rscut, nm);
   EXPECT_EQ(nrslat_diff, 3145);
 
 }
@@ -259,18 +260,18 @@ TEST(MadelungTests, RealSpaceAndReciprocalSpace) {
   auto k_brav = bravais;
   r_brav.scale(1.0 / scaling_factor);
 
-  lsms::reciprocal_lattice(r_brav, k_brav, scaling_factor);
+  reciprocal_lattice(r_brav, k_brav, scaling_factor);
 
 
   std::vector<int> nm(3);
   double rscut = 0.0;
   double kncut = 0.0;
 
-  lsms::real_space_trunc(r_brav, lmax, eta, rscut, nm);
-  auto nrslat = lsms::num_latt_vectors(r_brav, rscut, nm);
+  real_space_trunc(r_brav, lmax, eta, rscut, nm);
+  auto nrslat = num_latt_vectors(r_brav, rscut, nm);
 
-  lsms::reciprocal_space_trunc(k_brav, lmax, eta, kncut, nm);
-  auto nknlat = lsms::num_latt_vectors(k_brav, kncut, nm);
+  reciprocal_space_trunc(k_brav, lmax, eta, kncut, nm);
+  auto nknlat = num_latt_vectors(k_brav, kncut, nm);
 
   EXPECT_EQ(nrslat, 729);
   EXPECT_EQ(nknlat, 729);
@@ -323,7 +324,7 @@ TEST(MadelungTests, MadelungSummations1) {
   auto k_brav = bravais;
   r_brav.scale(1.0 / scaling_factor);
   atom_position.scale(1.0 / scaling_factor);
-  lsms::reciprocal_lattice(r_brav, k_brav, scaling_factor);
+  reciprocal_lattice(r_brav, k_brav, scaling_factor);
 
   auto omegbra = lsms::omega(r_brav);
   auto alat = scaling_factor * std::cbrt(3.0 * omegbra / (4.0 * M_PI * num_atoms));
@@ -333,11 +334,11 @@ TEST(MadelungTests, MadelungSummations1) {
   double rscut = 0.0;
   double kncut = 0.0;
 
-  lsms::real_space_trunc(r_brav, lmax, eta, rscut, nm);
-  auto nrslat = lsms::num_latt_vectors(r_brav, rscut, nm);
+  real_space_trunc(r_brav, lmax, eta, rscut, nm);
+  auto nrslat = num_latt_vectors(r_brav, rscut, nm);
 
-  lsms::reciprocal_space_trunc(k_brav, lmax, eta, kncut, nm);
-  auto nknlat = lsms::num_latt_vectors(k_brav, kncut, nm);
+  reciprocal_space_trunc(k_brav, lmax, eta, kncut, nm);
+  auto nknlat = num_latt_vectors(k_brav, kncut, nm);
 
   // 3. Create the lattices
   Matrix<double> rslat;
@@ -451,7 +452,7 @@ TEST(MadelungTests, MadelungSummations2) {
 
   r_brav.scale(1.0 / scaling_factor);
   atom_position.scale(1.0 / scaling_factor);
-  lsms::reciprocal_lattice(r_brav, k_brav, scaling_factor);
+  reciprocal_lattice(r_brav, k_brav, scaling_factor);
 
   // 1.1 Test bravais lattices
   EXPECT_NEAR(r_brav(0, 0), 1.1745719640673216, 1e-12);
@@ -473,19 +474,19 @@ TEST(MadelungTests, MadelungSummations2) {
   double kncut = 0.0;
 
   auto eta = lsms::calculate_eta(r_brav);
-  lsms::real_space_trunc(r_brav, lmax, eta, rscut, r_nm);
+  real_space_trunc(r_brav, lmax, eta, rscut, r_nm);
   EXPECT_EQ(r_nm[0], 4);
   EXPECT_EQ(r_nm[1], 4);
   EXPECT_EQ(r_nm[2], 3);
   EXPECT_NEAR(rscut, 10.400980527028162, 1e-12);
-  auto nrslat = lsms::num_latt_vectors(r_brav, rscut, r_nm);
+  auto nrslat = num_latt_vectors(r_brav, rscut, r_nm);
 
-  lsms::reciprocal_space_trunc(k_brav, lmax, eta, kncut, k_nm);
+  reciprocal_space_trunc(k_brav, lmax, eta, kncut, k_nm);
   EXPECT_EQ(k_nm[0], 4);
   EXPECT_EQ(k_nm[1], 4);
   EXPECT_EQ(k_nm[2], 5);
   EXPECT_NEAR(kncut, 41.162263498561067, 1e-12);
-  auto nknlat = lsms::num_latt_vectors(k_brav, kncut, k_nm);
+  auto nknlat = num_latt_vectors(k_brav, kncut, k_nm);
 
   // 3. Create the lattices
   Matrix<double> rslat;

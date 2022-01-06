@@ -11,7 +11,7 @@
 #include <utility>
 #include <utility>
 
-#include "Matrix.hpp"
+#include "common/Matrix.hpp"
 
 namespace lsms {
 

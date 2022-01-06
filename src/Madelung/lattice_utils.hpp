@@ -6,9 +6,11 @@
 #define MADELUNG_LATTICE_HPP
 
 #include "Matrix.hpp"
+#include "Array3d.hpp"
 
 #include <vector>
 #include <tuple>
+#include <complex>
 
 namespace lsms {
 
@@ -42,6 +44,13 @@ namespace lsms {
    * Lattice volumes
    */
    double omega(Matrix<double> &bravais);
+
+   /**
+    * Calculate reciprocal lattice
+    */
+   void reciprocal_lattice(Matrix<double> &bravais,
+                           Matrix<double> &reciprocal_bravais,
+                           double &scale);
 
 }
 

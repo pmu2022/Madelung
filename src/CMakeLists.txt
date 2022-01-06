@@ -1,4 +1,10 @@
 
+add_library(MultipoleMadelung SHARED)
+
+add_subdirectory(common)
+
+add_subdirectory(Madelung)
+
 
 add_executable(Madelung main.cpp)
 

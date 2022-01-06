@@ -1,28 +1,36 @@
 
 
-add_library(MultipoleMadelung SHARED)
 
 target_sources(MultipoleMadelung
         PUBLIC
+
         MultipoleMadelung.cpp
         MultipoleMadelung.hpp
-        Lattice.cpp
-        Lattice.hpp
-        Matrix.hpp
-        Array3d.hpp
+
+        lattice_utils.cpp
+        lattice_utils.hpp
+
+        madelung.cpp
+        madelung.hpp
+
+        integer_factors.hpp
+        integer_factors.cpp
+
         utils.hpp
         debug.hpp
         common.hpp
-        spherical_harmonics.f90
+
         spherical_harmonics.hpp
+        spherical_harmonics.f90
+
+        gaunt_factor.hpp
+        gaunt_factor.cpp
+        gaunt_factor.f90
+
         integer_factors.f90
         legendre.f90
         clm.f90
-        integer_factors.hpp
-        gaunt_factor.f90
-        gaunt_factor.hpp
         gaussq.f90
-        gaunt_factor.cpp
         )
 
 target_include_directories(MultipoleMadelung PUBLIC

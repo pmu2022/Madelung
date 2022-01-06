@@ -3,8 +3,8 @@
 
 #include <cmath>
 
-#include "Array3d.hpp"
-#include "Matrix.hpp"
+#include "../src/common/Array3d.hpp"
+#include "../src/common/Matrix.hpp"
 #include "gaunt_factor.hpp"
 #include "gaussq.h"
 

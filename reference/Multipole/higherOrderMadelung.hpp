@@ -13,7 +13,7 @@
 
 #include "Real.hpp"
 #include "Complex.hpp"
-#include "Matrix.hpp"
+#include "../../src/common/Matrix.hpp"
 
 namespace lsms {
 

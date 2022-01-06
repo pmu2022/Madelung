@@ -1,33 +1,26 @@
 //
-// Created by F.Moitzi on 16.12.2021.
+// Created by F.Moitzi on 06.01.2022.
 //
 
-#include "MultipoleMadelung.hpp"
+#include "madelung.hpp"
+
 
 #define _USE_MATH_DEFINES
 
-#include "math.h"
-
-#include <iostream>
+#include <cmath>
 #include <algorithm>
-#include <vector>
-#include <complex>
 
-#include "Matrix.hpp"
-#include "Array3d.hpp"
-
-#include "Lattice.hpp"
-#include "common.hpp"
+#include "lattice_utils.hpp"
 #include "utils.hpp"
-#include "spherical_harmonics.hpp"
 #include "integer_factors.hpp"
+#include "spherical_harmonics.hpp"
+#include "common.hpp"
 #include "gaunt_factor.hpp"
 
-
-double lsms::scaling_factor(Matrix<double> &bravais, int lmax) {
-
-  constexpr auto max_iter = 100;
-  constexpr auto fstep = 0.02;
+double lsms::scaling_factor(const Matrix<double> &bravais,
+                            int lmax,
+                            int max_iter,
+                            double fstep) {
 
   double rscut = 0.0;
   double kncut = 0.0;
@@ -38,27 +31,21 @@ double lsms::scaling_factor(Matrix<double> &bravais, int lmax) {
   Matrix<double> k_brav(3, 3);
 
   // Get the shortest axis
-  auto a0 = sqrt(bravais(0, 0) * bravais(0, 0) +
-                 bravais(1, 0) * bravais(1, 0) +
-                 bravais(2, 0) * bravais(2, 0));
+  auto a0 = std::sqrt(bravais(0, 0) * bravais(0, 0) +
+                      bravais(1, 0) * bravais(1, 0) +
+                      bravais(2, 0) * bravais(2, 0));
 
-  auto a1 = sqrt(bravais(0, 1) * bravais(0, 1) +
-                 bravais(1, 1) * bravais(1, 1) +
-                 bravais(2, 1) * bravais(2, 1));
+  auto a1 = std::sqrt(bravais(0, 1) * bravais(0, 1) +
+                      bravais(1, 1) * bravais(1, 1) +
+                      bravais(2, 1) * bravais(2, 1));
 
-  auto a2 = sqrt(bravais(0, 2) * bravais(0, 2) +
-                 bravais(1, 2) * bravais(1, 2) +
-                 bravais(2, 2) * bravais(2, 2));
+  auto a2 = std::sqrt(bravais(0, 2) * bravais(0, 2) +
+                      bravais(1, 2) * bravais(1, 2) +
+                      bravais(2, 2) * bravais(2, 2));
 
-
-  // 1.0
   double scaling_fac = std::min({a0, a1, a2});
-
   auto eta = 0.5 + 0.1 * std::max({a0, a1, a2}) / scaling_fac;
-
-  // 0.1591
   scaling_fac /= 2.0 * M_PI;
-
 
   for (int i = 0; i <= max_iter; i++) {
 
@@ -68,22 +55,22 @@ double lsms::scaling_factor(Matrix<double> &bravais, int lmax) {
 
     reciprocal_lattice(r_brav, k_brav, scaling_fac);
 
-    std::vector<int> nm(3, 0);
-
     // Radius of real space truncation sphere
-    lsms::real_space_trunc(r_brav, lmax, eta, rscut, nm);
+    auto nm = real_space_multiplication(r_brav, lmax, eta);
+    auto rscut = real_space_trunc_radius(r_brav, lmax, eta, nm);
 
     // Calculate number of lattice vectors
-    auto nrslat = lsms::num_latt_vectors(r_brav, rscut, nm);
+    auto nrslat = num_latt_vectors(r_brav, rscut, nm);
 
     // Radius of reciprocal space
-    lsms::reciprocal_space_trunc(k_brav, lmax, eta, kncut, nm);
+    reciprocal_space_trunc(k_brav, lmax, eta, kncut, nm);
     // Calculate number of lattice vectors
-    auto nknlat = lsms::num_latt_vectors(k_brav, kncut, nm);
+    auto nknlat = num_latt_vectors(k_brav, kncut, nm);
 
-    //printf("ALAT: %f %f %f\n", r_brav(0, 0), r_brav(1, 1), r_brav(2, 2));
-    //printf("RS: %f KN: %f RSLAT: %d KNLAT: %d SC: %f\n", rscut, kncut, nrslat, nknlat, scaling_fac);
-
+#ifdef LSMS_DEBUG
+    std::printf("ALAT: %f %f %f\n", r_brav(0, 0), r_brav(1, 1), r_brav(2, 2));
+    std::printf("RS: %f KN: %f RSLAT: %d KNLAT: %d SC: %f\n", rscut, kncut, nrslat, nknlat, scaling_fac);
+#endif
 
     if (nknlat < nrslat / 2) {
       scaling_fac = scaling_fac - fstep;
@@ -93,173 +80,12 @@ double lsms::scaling_factor(Matrix<double> &bravais, int lmax) {
       break;
     }
 
-
   }
-
 
   return scaling_fac;
 }
 
-void lsms::reciprocal_lattice(Matrix<double> &bravais,
-                              Matrix<double> &reciprocal_bravais,
-                              double &scale
-) {
-
-  // 248.050
-  auto vol = (bravais(1, 0) * bravais(2, 1) -
-              bravais(2, 0) * bravais(1, 1)) * bravais(0, 2) +
-             (bravais(2, 0) * bravais(0, 1) -
-              bravais(0, 0) * bravais(2, 1)) *
-             bravais(1, 2) +
-             (bravais(0, 0) *
-              bravais(1, 1) -
-              bravais(1, 0) *
-              bravais(0, 1)) *
-             bravais(2, 2);
-
-  // 0.02533
-  auto factor = 2.0 * M_PI / std::fabs(vol);
-
-  reciprocal_bravais(0, 0) = factor * (bravais(1, 1) * bravais(2, 2) - bravais(2, 1) * bravais(1, 2));
-  reciprocal_bravais(1, 0) = factor * (bravais(2, 1) * bravais(0, 2) - bravais(0, 1) * bravais(2, 2));
-  reciprocal_bravais(2, 0) = factor * (bravais(0, 1) * bravais(1, 2) - bravais(1, 1) * bravais(0, 2));
-
-  reciprocal_bravais(0, 1) = factor * (bravais(1, 2) * bravais(2, 0) - bravais(2, 2) * bravais(1, 0));
-  reciprocal_bravais(1, 1) = factor * (bravais(2, 2) * bravais(0, 0) - bravais(0, 2) * bravais(2, 0));
-  reciprocal_bravais(2, 1) = factor * (bravais(0, 2) * bravais(1, 0) - bravais(1, 2) * bravais(0, 0));
-
-  reciprocal_bravais(0, 2) = factor * (bravais(1, 0) * bravais(2, 1) - bravais(2, 0) * bravais(1, 1));
-  reciprocal_bravais(1, 2) = factor * (bravais(2, 0) * bravais(0, 1) - bravais(0, 0) * bravais(2, 1));
-  reciprocal_bravais(2, 2) = factor * (bravais(0, 0) * bravais(1, 1) - bravais(1, 0) * bravais(0, 1));
-
-}
-
-
-void lsms::real_space_trunc(Matrix<double> &brav,
-                            int lmax_mad,
-                            double eta,
-                            double &rscut,
-                            std::vector<int> &nm) {
-
-  rscut = 0.0;
-
-
-  std::vector<double> r(3, 0.0);
-
-
-  for (int i = 0; i < 3; i++) {
-    r[i] = std::sqrt(
-        brav(0, i) * brav(0, i) +
-        brav(1, i) * brav(1, i) +
-        brav(2, i) * brav(2, i));
-
-  }
-
-
-  for (int i = 0; i < 3; i++) {
-    nm[i] = 0;
-
-    auto term = 1.0;
-    while (term > 0.5 * EPSI) {
-      nm[i]++;
-      auto gamma = gamma_func(nm[i] * r[i] / eta, lmax_mad);
-      term = gamma[lmax_mad] / std::pow((nm[i] * r[i] / 2.0), lmax_mad + 1);
-      // std::cout << term << " " << nm[i] << " " << eta << " " << lmax_mad << " " << r[i] << std::endl;
-    }
-
-  }
-
-
-  for (int i = -1; i <= 1; i++) {
-
-    for (int idx = 0; idx < 3; idx++) {
-      r[idx] = i * brav(idx, 0) * nm[0];
-    }
-
-    for (int j = -1; j <= 1; j++) {
-
-      for (int idx = 0; idx < 3; idx++) {
-        r[idx] = r[idx] + j * brav(idx, 1) * nm[1];
-      }
-
-      for (int k = -1; k <= 1; k++) {
-
-        for (int idx = 0; idx < 3; idx++) {
-          r[idx] = r[idx] + k * brav(idx, 2) * nm[2];
-        }
-
-        rscut = std::max(rscut, norm(r.begin(), r.end()));
-
-      }
-    }
-  }
-
-
-}
-
-
-void lsms::reciprocal_space_trunc(Matrix<double> &brav,
-                                  int lmax_mad,
-                                  double eta,
-                                  double &kncut,
-                                  std::vector<int> &nm) {
-
-  auto fac = eta * eta / 4.0;
-
-  kncut = 0.0;
-
-  std::vector<double> r(3, 0.0);
-
-
-  for (int i = 0; i < 3; i++) {
-    r[i] = brav(0, i) * brav(0, i) +
-           brav(1, i) * brav(1, i) +
-           brav(2, i) * brav(2, i);
-
-  }
-
-
-  for (int i = 0; i < 3; i++) {
-    nm[i] = 0;
-
-    auto term = 1.0;
-    while (term > 0.5 * EPSI) {
-      nm[i]++;
-      auto rm = nm[i] * nm[i] * r[i];
-      term = std::exp(-fac * rm) * std::pow(std::sqrt(rm), lmax_mad - 2);
-    }
-
-  }
-
-
-  for (int i = -1; i <= 1; i++) {
-
-    for (int idx = 0; idx < 3; idx++) {
-      r[idx] = i * brav(idx, 0) * nm[0];
-    }
-
-    for (int j = -1; j <= 1; j++) {
-
-      for (int idx = 0; idx < 3; idx++) {
-        r[idx] = r[idx] + j * brav(idx, 1) * nm[1];
-      }
-
-      for (int k = -1; k <= 1; k++) {
-
-        for (int idx = 0; idx < 3; idx++) {
-          r[idx] = r[idx] + k * brav(idx, 2) * nm[2];
-        }
-
-        kncut = std::max(kncut, norm(r.begin(), r.end()));
-
-      }
-    }
-  }
-
-}
-
-
-int lsms::num_latt_vectors(Matrix<double> &brav, double cut, std::vector<int> &nm) {
+int lsms::num_latt_vectors(const Matrix<double> &brav, double cut, const std::vector<int> &nm) {
 
   int number = 0;
 
@@ -291,105 +117,199 @@ int lsms::num_latt_vectors(Matrix<double> &brav, double cut, std::vector<int> &n
 }
 
 
-__attribute__((unused)) int lsms::num_latt_vectors_legacy(Matrix<double> &brav, double cut, std::vector<int> &nm) {
+std::vector<int> lsms::real_space_multiplication(const Matrix<double> &brav, int lmax, double eta) {
+
+  std::vector<int> nm(3);
+  std::vector<double> r(3, 0.0);
+
+  for (int i = 0; i < 3; i++) {
+    r[i] = std::sqrt(
+        brav(0, i) * brav(0, i) +
+        brav(1, i) * brav(1, i) +
+        brav(2, i) * brav(2, i));
+
+  }
+
+  for (int i = 0; i < 3; i++) {
+    nm[i] = 0;
+    auto term = 1.0;
+    while (term > 0.5 * lsms::EPSI) {
+      nm[i]++;
+      auto gamma = gamma_func(nm[i] * r[i] / eta, lmax);
+      term = gamma[lmax] / std::pow((nm[i] * r[i] / 2.0), lmax + 1);
+    }
+  }
+
+  return nm;
+}
 
 
-  int number = 0;
+double lsms::real_space_trunc_radius(const Matrix<double> &brav, int lmax, double eta, const std::vector<int> &nm) {
 
-  // To also include vectors on the boarder
-  double vcut2 = cut * cut + 1e-6;
+  auto rscut = 0.0;
 
-  int tn1p1 = 2 * nm[0] + 1;
-  int tn2p1 = 2 * nm[1] + 1;
-  int tn3p1 = 2 * nm[2] + 1;
+  std::vector<double> r(3, 0.0);
 
-  int nt12 = tn1p1 * tn2p1;
-  int nt123 = nt12 * tn3p1;
+  for (int i = 0; i < 3; i++) {
+    r[i] = sqrt(
+        brav(0, i) * brav(0, i) +
+        brav(1, i) * brav(1, i) +
+        brav(2, i) * brav(2, i));
 
-  int n1, n2, n3;
+  }
 
-  std::vector<double> vn(3, 0.0);
+  for (int i = -1; i <= 1; i++) {
 
-  for (int i = 0; i < nt123; i++) {
+    for (int idx = 0; idx < 3; idx++) {
+      r[idx] = i * brav(idx, 0) * nm[0];
+    }
 
-    n1 = i - 1;
-    n1 = n1 % tn1p1 - nm[0];
-    n2 = (i - 1) / tn1p1;
-    n2 = n2 % tn2p1 - nm[1];
-    n3 = (i - 1) / nt12;
-    n3 = n3 % tn3p1 - nm[2];
+    for (int j = -1; j <= 1; j++) {
 
-    vn[0] = n1 * brav(0, 0) + n2 * brav(0, 1) + n3 * brav(0, 2);
-    vn[1] = n1 * brav(1, 0) + n2 * brav(1, 1) + n3 * brav(1, 2);
-    vn[2] = n1 * brav(2, 0) + n2 * brav(2, 1) + n3 * brav(2, 2);
+      for (int idx = 0; idx < 3; idx++) {
+        r[idx] = r[idx] + j * brav(idx, 1) * nm[1];
+      }
 
-    if (norm_sq(vn.begin(), vn.end()) <= vcut2) {
-      number++;
+      for (int k = -1; k <= 1; k++) {
+
+        for (int idx = 0; idx < 3; idx++) {
+          r[idx] = r[idx] + k * brav(idx, 2) * nm[2];
+        }
+
+        rscut = std::max(rscut, norm(r.begin(), r.end()));
+
+      }
+    }
+  }
+
+  return rscut;
+
+}
+
+
+
+/**
+ ***************************************************************************
+ ***************************************************************************
+ ***************************************************************************
+ */
+
+
+
+void lsms::real_space_trunc(Matrix<double> &brav,
+                            int lmax_mad,
+                            double eta,
+                            double &rscut,
+                            std::vector<int> &nm) {
+
+  rscut = 0.0;
+
+  std::vector<double> r(3, 0.0);
+
+  for (int i = 0; i < 3; i++) {
+    r[i] = sqrt(
+        brav(0, i) * brav(0, i) +
+        brav(1, i) * brav(1, i) +
+        brav(2, i) * brav(2, i));
+
+  }
+
+
+  for (int i = 0; i < 3; i++) {
+    nm[i] = 0;
+    auto term = 1.0;
+    while (term > 0.5 * lsms::EPSI) {
+      nm[i]++;
+      auto gamma = gamma_func(nm[i] * r[i] / eta, lmax_mad);
+      term = gamma[lmax_mad] / std::pow((nm[i] * r[i] / 2.0), lmax_mad + 1);
+    }
+  }
+
+
+  for (int i = -1; i <= 1; i++) {
+
+    for (int idx = 0; idx < 3; idx++) {
+      r[idx] = i * brav(idx, 0) * nm[0];
+    }
+
+    for (int j = -1; j <= 1; j++) {
+
+      for (int idx = 0; idx < 3; idx++) {
+        r[idx] = r[idx] + j * brav(idx, 1) * nm[1];
+      }
+
+      for (int k = -1; k <= 1; k++) {
+
+        for (int idx = 0; idx < 3; idx++) {
+          r[idx] = r[idx] + k * brav(idx, 2) * nm[2];
+        }
+
+        rscut = std::max(rscut, norm(r.begin(), r.end()));
+
+      }
+    }
+  }
+
+
+}
+
+void lsms::reciprocal_space_trunc(Matrix<double> &brav,
+                                  int lmax_mad,
+                                  double eta,
+                                  double &kncut,
+                                  std::vector<int> &nm) {
+
+  auto fac = eta * eta / 4.0;
+
+  kncut = 0.0;
+
+  std::vector<double> r(3, 0.0);
+
+
+  for (int i = 0; i < 3; i++) {
+    r[i] = brav(0, i) * brav(0, i) +
+           brav(1, i) * brav(1, i) +
+           brav(2, i) * brav(2, i);
+
+  }
+
+
+  for (int i = 0; i < 3; i++) {
+    nm[i] = 0;
+
+    auto term = 1.0;
+    while (term > 0.5 * lsms::EPSI) {
+      nm[i]++;
+      auto rm = nm[i] * nm[i] * r[i];
+      term = exp(-fac * rm) * std::pow(sqrt(rm), lmax_mad - 2);
     }
 
   }
 
-  return number;
 
+  for (int i = -1; i <= 1; i++) {
 
-}
+    for (int idx = 0; idx < 3; idx++) {
+      r[idx] = i * brav(idx, 0) * nm[0];
+    }
 
+    for (int j = -1; j <= 1; j++) {
 
-void lsms::generate_lattice(Matrix<double> &r_brav,
-                            Matrix<double> &k_brav,
-                            int lmax,
-                            double eta) {
+      for (int idx = 0; idx < 3; idx++) {
+        r[idx] = r[idx] + j * brav(idx, 1) * nm[1];
+      }
 
-  std::vector<int> nm(3);
-  double rscut = 0.0;
-  double kncut = 0.0;
+      for (int k = -1; k <= 1; k++) {
 
-  Matrix<double> rslat;
-  std::vector<double> rslat_sq;
+        for (int idx = 0; idx < 3; idx++) {
+          r[idx] = r[idx] + k * brav(idx, 2) * nm[2];
+        }
 
-  Matrix<double> knlat;
-  std::vector<double> knlat_sq;
+        kncut = std::max(kncut, norm(r.begin(), r.end()));
 
-  // Radius of real space truncation sphere
-  lsms::real_space_trunc(r_brav, lmax, eta, rscut, nm);
-  // Calculate number of lattice vectors
-  auto nrslat = lsms::num_latt_vectors(r_brav, rscut, nm);
-  // Create lattice vectors for real space grid
-  tie(rslat, rslat_sq) = lsms::create_lattice_and_sq(r_brav, rscut, nm, nrslat);
-
-  // Radius of reciprocal space
-  lsms::reciprocal_space_trunc(k_brav, lmax, eta, kncut, nm);
-  // Calculate number of lattice vectors
-  auto nknlat = lsms::num_latt_vectors(k_brav, kncut, nm);
-  // Create lattice vectors for reciprocal space grid
-  tie(knlat, knlat_sq) = lsms::create_lattice_and_sq(k_brav, kncut, nm, nknlat);
-
-
-}
-
-
-void lsms::init_madelung(Matrix<double> &bravais,
-                         Matrix<double> &atom_position,
-                         int lmax) {
-
-  /*
-   * Calculate the scale
-   */
-
-  double scale = scaling_factor(bravais, lmax);
-
-  auto r_brav = bravais;
-  auto k_brav = bravais;
-
-  /*
-   *  change units so that both vbrar and atom_posi_* are in
-   *  in the units of scale
-   */
-  r_brav.scale(1.0 / scale);
-  atom_position.scale(1.0 / scale);
-
-  reciprocal_lattice(r_brav, k_brav, scale);
-
+      }
+    }
+  }
 
 }
 
@@ -791,7 +711,7 @@ lsms::get_madelung(int num_atoms, int lmax, Matrix<double> &bravais, Matrix<doub
 
   r_brav.scale(1.0 / scaling_factor);
   atom_position.scale(1.0 / scaling_factor);
-  lsms::reciprocal_lattice(r_brav, k_brav, scaling_factor);
+  reciprocal_lattice(r_brav, k_brav, scaling_factor);
 
 
   auto omegbra = lsms::omega(r_brav);
@@ -804,11 +724,11 @@ lsms::get_madelung(int num_atoms, int lmax, Matrix<double> &bravais, Matrix<doub
   double kncut = 0.0;
 
   auto eta = lsms::calculate_eta(r_brav);
-  lsms::real_space_trunc(r_brav, lmax, eta, rscut, r_nm);
-  auto nrslat = lsms::num_latt_vectors(r_brav, rscut, r_nm);
+  real_space_trunc(r_brav, lmax, eta, rscut, r_nm);
+  auto nrslat = num_latt_vectors(r_brav, rscut, r_nm);
 
-  lsms::reciprocal_space_trunc(k_brav, lmax, eta, kncut, k_nm);
-  auto nknlat = lsms::num_latt_vectors(k_brav, kncut, k_nm);
+  reciprocal_space_trunc(k_brav, lmax, eta, kncut, k_nm);
+  auto nknlat = num_latt_vectors(k_brav, kncut, k_nm);
 
   // 3. Create the lattices
   Matrix<double> rslat;
@@ -861,3 +781,7 @@ lsms::get_madelung(int num_atoms, int lmax, Matrix<double> &bravais, Matrix<doub
   return std::make_tuple(madsum, DL_matrix, dl_factor);
 
 }
+
+
+
+

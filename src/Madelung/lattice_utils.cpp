@@ -2,7 +2,11 @@
 // Created by F.Moitzi on 21.12.2021.
 //
 
-#include "Lattice.hpp"
+#include "lattice_utils.hpp"
+
+#include <vector>
+#include <algorithm>
+#include <cmath>
 
 #include "utils.hpp"
 
@@ -124,5 +128,34 @@ lsms::create_lattice_and_sq(Matrix<double> &brav, double cutoff, const std::vect
 }
 
 
+void lsms::reciprocal_lattice(Matrix<double> &bravais,
+                              Matrix<double> &reciprocal_bravais,
+                              double &scale
+) {
 
+  auto vol = (bravais(1, 0) * bravais(2, 1) -
+              bravais(2, 0) * bravais(1, 1)) * bravais(0, 2) +
+             (bravais(2, 0) * bravais(0, 1) -
+              bravais(0, 0) * bravais(2, 1)) *
+             bravais(1, 2) +
+             (bravais(0, 0) *
+              bravais(1, 1) -
+              bravais(1, 0) *
+              bravais(0, 1)) *
+             bravais(2, 2);
 
+  auto factor = 2.0 * M_PI / fabs(vol);
+
+  reciprocal_bravais(0, 0) = factor * (bravais(1, 1) * bravais(2, 2) - bravais(2, 1) * bravais(1, 2));
+  reciprocal_bravais(1, 0) = factor * (bravais(2, 1) * bravais(0, 2) - bravais(0, 1) * bravais(2, 2));
+  reciprocal_bravais(2, 0) = factor * (bravais(0, 1) * bravais(1, 2) - bravais(1, 1) * bravais(0, 2));
+
+  reciprocal_bravais(0, 1) = factor * (bravais(1, 2) * bravais(2, 0) - bravais(2, 2) * bravais(1, 0));
+  reciprocal_bravais(1, 1) = factor * (bravais(2, 2) * bravais(0, 0) - bravais(0, 2) * bravais(2, 0));
+  reciprocal_bravais(2, 1) = factor * (bravais(0, 2) * bravais(1, 0) - bravais(1, 2) * bravais(0, 0));
+
+  reciprocal_bravais(0, 2) = factor * (bravais(1, 0) * bravais(2, 1) - bravais(2, 0) * bravais(1, 1));
+  reciprocal_bravais(1, 2) = factor * (bravais(2, 0) * bravais(0, 1) - bravais(0, 0) * bravais(2, 1));
+  reciprocal_bravais(2, 2) = factor * (bravais(0, 0) * bravais(1, 1) - bravais(1, 0) * bravais(0, 1));
+
+}
