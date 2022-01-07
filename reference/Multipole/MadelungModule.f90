@@ -288,6 +288,12 @@ contains
          !     ----------------------------------------------------------------
       enddo
 
+      print * , DL_factor(1,1)
+      print * , DL_factor(1,2)
+      print * , DL_factor(1,3)
+      print * , DL_factor(1,4)
+      print * , DL_factor(1,5)
+
       !
       if (jmax_mad > 1) then
          deallocate(Ylm, cspace, ctmp)

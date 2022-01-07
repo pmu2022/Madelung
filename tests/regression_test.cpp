@@ -2,23 +2,14 @@
  *
  * Regression tests to ensure that the results are the same all the time
  *
-
  */
 
 
 #include <gtest/gtest.h>
 
-#define _USE_MATH_DEFINES
-
-#include <cmath>
-#include <cassert>
 #include <complex>
-#include <cstdlib>
 #include <iostream>
-#include <complex>
-#include <cmath>
 #include <vector>
-#include <tuple>
 
 #include "multipole_madelung.h"
 
@@ -29,7 +20,6 @@
  */
 TEST(RegressionTestSuite, Structure1) {
 
-  int num_local_atoms = 2;
   int num_atoms = 2;
   std::vector<int> gindex{0, 1};
   int lmax = 3;
@@ -53,10 +43,22 @@ TEST(RegressionTestSuite, Structure1) {
 
   lsms::MultipoleMadelung madelung(lattice, position, lmax, gindex);
 
+  // Test of all madelung values
   EXPECT_NEAR(-0.2837297479481e+01, madelung.getMadSum(0, 0), 1e-12);
   EXPECT_NEAR(-0.8019359700280e+00, madelung.getMadSum(1, 0), 1e-12);
   EXPECT_NEAR(-0.8019359700280e+00, madelung.getMadSum(0, 1), 1e-12);
   EXPECT_NEAR(-0.2837297479481e+01, madelung.getMadSum(1, 1), 1e-12);
+
+  // Test of all dl matrix values
+  EXPECT_NEAR(-10.057957687339862, std::real(madelung.getDlMatrix(0, 0, 0)), 1e-12);
+  EXPECT_NEAR(0.0, std::imag(madelung.getDlMatrix(0, 0, 0)), 1e-12);
+
+  // Test of all dl factors
+  EXPECT_NEAR( 0.28209479177387842, madelung.getDlFactor(0, 0), 1e-12);
+  EXPECT_NEAR(9.4031597257959593E-002, madelung.getDlFactor(0, 1), 1e-12);
+  EXPECT_NEAR( -9.4031597257959454E-002, madelung.getDlFactor(0, 2), 1e-12);
+  EXPECT_NEAR(1.8806319451591908E-002, madelung.getDlFactor(0, 3), 1e-12);
+  EXPECT_NEAR(-1.8806319451591908E-002, madelung.getDlFactor(0, 4), 1e-12);
 
 }
 

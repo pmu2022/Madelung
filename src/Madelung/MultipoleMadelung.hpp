@@ -25,8 +25,10 @@ namespace lsms {
     /// Local number of atoms
     int local_num_atoms;
 
-    /// Madelung sum
+    /// Madelung Matrix values
     Matrix<double> madsum;
+    Array3d<std::complex<double>> dl_matrix;
+    Matrix<double> dl_factor;
 
   public:
 
@@ -43,9 +45,7 @@ namespace lsms {
     const std::vector<int> &global_position_index;
 
 
-    Array3d<std::complex<double>> dl_matrix;
 
-    Matrix<double> dl_factor;
 
     MultipoleMadelung(const Matrix<double> &lattice,
                       Matrix<double> atom_position,
@@ -54,6 +54,9 @@ namespace lsms {
 
     double getMadSum(int i, int j) const;
 
+    std::complex<double> getDlMatrix(int g_atom, int k, int l_atom);
+
+    double getDlFactor(int i, int j);
 
 
   };

@@ -115,5 +115,14 @@ double lsms::MultipoleMadelung::getMadSum(int i, int j) const{
   return madsum(i, j);
 }
 
+std::complex<double> lsms::MultipoleMadelung::getDlMatrix(int i, int k, int j) {
+  return dl_matrix(i, k, j);
+}
+
+double lsms::MultipoleMadelung::getDlFactor(int i, int j) {
+  return dl_factor(i, j);
+}
+
+
 
 
