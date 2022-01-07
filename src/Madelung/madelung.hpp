@@ -43,12 +43,22 @@ namespace lsms {
 
 
   /**
-   * Get radius of trunctuation sphere
+   * Get radius of truncation sphere
    */
-  double real_space_trunc_radius(const Matrix<double> &brav,
+  double trunc_radius(const Matrix<double> &brav,
                                  int lmax,
                                  double eta,
                                  const std::vector<int> &nm);
+
+  /**
+  * Get size of reciprocal lattice multiplications
+  */
+  std::vector<int> reciprocal_space_multiplication(const Matrix<double> &brav,
+                                             int lmax,
+                                             double eta);
+
+
+  /*
 
   void real_space_trunc(Matrix<double> &brav,
                         int lmax_mad,
@@ -61,6 +71,7 @@ namespace lsms {
                               double eta,
                               double &rscut,
                               std::vector<int> &nm);
+                              */
 
 
 

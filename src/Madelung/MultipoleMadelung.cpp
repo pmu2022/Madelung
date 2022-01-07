@@ -18,10 +18,10 @@
 #include "madelung.hpp"
 #include "lattice_utils.hpp"
 
-lsms::MultipoleMadelung::MultipoleMadelung(const Matrix<double> &lattice,
+lsms::MultipoleMadelung::MultipoleMadelung(Matrix<double> lattice,
                                            Matrix<double> atom_position,
                                            int lmax,
-                                           const std::vector<int> &global_position_index) :
+                                           std::vector<int> global_position_index) :
     lattice{lattice},
     atom_position{atom_position},
     lmax{lmax},

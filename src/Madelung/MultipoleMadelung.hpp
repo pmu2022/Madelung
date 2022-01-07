@@ -32,8 +32,14 @@ namespace lsms {
 
   public:
 
+    /*
+     * There is actually no reason why this is needed
+     *
+     * Multipole madelung should just store the results even scaling of atom position is bull shit
+     */
+
     /// Lattice of the structure
-    const Matrix<double> &lattice;
+    Matrix<double> lattice;
 
     /// Atomic positions
     Matrix<double> atom_position;
@@ -42,15 +48,15 @@ namespace lsms {
     int lmax;
 
     /// Index of local atoms
-    const std::vector<int> &global_position_index;
+    std::vector<int> global_position_index;
 
 
 
 
-    MultipoleMadelung(const Matrix<double> &lattice,
+    MultipoleMadelung(Matrix<double> lattice,
                       Matrix<double> atom_position,
                       int lmax,
-                      const std::vector<int> &global_position_index);
+                      std::vector<int> global_position_index);
 
     double getMadSum(int i, int j) const;
 

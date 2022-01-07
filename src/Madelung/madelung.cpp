@@ -22,8 +22,7 @@ double lsms::scaling_factor(const Matrix<double> &bravais,
                             int max_iter,
                             double fstep) {
 
-  double rscut = 0.0;
-  double kncut = 0.0;
+
 
   // Scaled bravais lattice
   Matrix<double> r_brav(3, 3);
@@ -47,6 +46,8 @@ double lsms::scaling_factor(const Matrix<double> &bravais,
   auto eta = 0.5 + 0.1 * std::max({a0, a1, a2}) / scaling_fac;
   scaling_fac /= 2.0 * M_PI;
 
+  std::vector<int> nm(3);
+
   for (int i = 0; i <= max_iter; i++) {
 
     r_brav = bravais;
@@ -56,14 +57,16 @@ double lsms::scaling_factor(const Matrix<double> &bravais,
     reciprocal_lattice(r_brav, k_brav, scaling_fac);
 
     // Radius of real space truncation sphere
-    auto nm = real_space_multiplication(r_brav, lmax, eta);
-    auto rscut = real_space_trunc_radius(r_brav, lmax, eta, nm);
+    nm = real_space_multiplication(r_brav, lmax, eta);
+    auto rscut = trunc_radius(r_brav, lmax, eta, nm);
 
     // Calculate number of lattice vectors
     auto nrslat = num_latt_vectors(r_brav, rscut, nm);
 
     // Radius of reciprocal space
-    reciprocal_space_trunc(k_brav, lmax, eta, kncut, nm);
+    nm = reciprocal_space_multiplication(r_brav, lmax, eta);
+    auto kncut = trunc_radius(k_brav, lmax, eta, nm);
+
     // Calculate number of lattice vectors
     auto nknlat = num_latt_vectors(k_brav, kncut, nm);
 
@@ -144,9 +147,9 @@ std::vector<int> lsms::real_space_multiplication(const Matrix<double> &brav, int
 }
 
 
-double lsms::real_space_trunc_radius(const Matrix<double> &brav, int lmax, double eta, const std::vector<int> &nm) {
+double lsms::trunc_radius(const Matrix<double> &brav, int lmax, double eta, const std::vector<int> &nm) {
 
-  auto rscut = 0.0;
+  auto cut = 0.0;
 
   std::vector<double> r(3, 0.0);
 
@@ -176,15 +179,47 @@ double lsms::real_space_trunc_radius(const Matrix<double> &brav, int lmax, doubl
           r[idx] = r[idx] + k * brav(idx, 2) * nm[2];
         }
 
-        rscut = std::max(rscut, norm(r.begin(), r.end()));
+        cut = std::max(cut, norm(r.begin(), r.end()));
 
       }
     }
   }
 
-  return rscut;
+  return cut;
 
 }
+
+
+
+std::vector<int> lsms::reciprocal_space_multiplication(const Matrix<double> &brav, int lmax, double eta) {
+
+  std::vector<int> nm(3);
+  std::vector<double> r(3, 0.0);
+
+  for (int i = 0; i < 3; i++) {
+    r[i] = std::sqrt(
+        brav(0, i) * brav(0, i) +
+        brav(1, i) * brav(1, i) +
+        brav(2, i) * brav(2, i));
+
+  }
+
+  auto fac = eta * eta / 4.0;
+
+  for (int i = 0; i < 3; i++) {
+    nm[i] = 0;
+    auto term = 1.0;
+    while (term > 0.5 * lsms::EPSI) {
+      nm[i]++;
+      auto rm = nm[i] * nm[i] * r[i];
+      term = exp(-fac * rm) * std::pow(sqrt(rm), lmax - 2);
+    }
+
+  }
+
+  return nm;
+}
+
 
 
 
