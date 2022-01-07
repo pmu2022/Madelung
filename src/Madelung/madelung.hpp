@@ -86,27 +86,7 @@ namespace lsms {
 
   Matrix<double> calculate_dl_factor(int lmax);
 
-  void calculate_madelung(
-      Matrix<double> &madmat,
-      Array3d<std::complex<double>> &DL_matrix,
-      Matrix<double> &atom_position,
-      int global_natoms,
-      int local_natoms,
-      int id,
-      int myatom,
-      int jmax_mad,
-      int kmax_mad,
-      int lmax_mad,
-      double omega,
-      double eta,
-      double a0,
-      double alat,
-      int nrslat,
-      Matrix<double> &rslat,
-      std::vector<double> &rslatsq,
-      int nknlat,
-      Matrix<double> &knlat,
-      std::vector<double> &knlatsq);
+
 
 
 }
