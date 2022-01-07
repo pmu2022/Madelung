@@ -551,7 +551,10 @@ double lsms::calculate_eta(Matrix<double> &bravais) {
 
 }
 
-Matrix<double> lsms::calculate_dl_factor(int kmax_mad, int jmax_mad, int lmax_mad) {
+Matrix<double> lsms::calculate_dl_factor(int lmax_mad) {
+
+  int kmax_mad = get_kmax(lmax_mad);
+  int jmax_mad = get_jmax(lmax_mad);
 
   // Variable
   Matrix<double> dl_factor(kmax_mad, jmax_mad);

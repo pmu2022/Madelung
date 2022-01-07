@@ -6,6 +6,7 @@
 #define MADELUNG_INTEGER_FACTORS_HPP
 
 #include <vector>
+#include <type_traits>
 
 namespace lsms {
 
@@ -18,6 +19,16 @@ namespace lsms {
   std::vector<int> get_mofj(int l0);
 
   std::vector<int> get_kofj(int l0);
+
+  template<typename Integer, typename = std::enable_if_t<std::is_integral<Integer>::value>>
+  Integer get_jmax(Integer lmax) {
+    return (lmax + 1) * (lmax + 2) / 2;
+  }
+
+  template<typename Integer, typename = std::enable_if_t<std::is_integral<Integer>::value>>
+  Integer get_kmax(Integer lmax) {
+    return (lmax + 1) * (lmax + 1);
+  }
 
 }
 

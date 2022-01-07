@@ -71,10 +71,8 @@ lsms::MultipoleMadelung::MultipoleMadelung(Matrix<double> lattice,
 
   auto omega = lsms::omega(r_brav);
 
-  // 4. Calculate the madelung matrix
+  // 4. Calculate the Madelung matrix and the prefactor matrix
   madsum = Matrix<double>(num_atoms, local_num_atoms);
-
-  // 5. Calculate DL matrix
   dl_matrix = Array3d<std::complex<double>>(num_atoms, kmax, local_num_atoms);
 
   for (auto i = 0; i < num_atoms; i++) {
@@ -103,12 +101,12 @@ lsms::MultipoleMadelung::MultipoleMadelung(Matrix<double> lattice,
 
   }
 
-  // 6. Dl factors
-  dl_factor = lsms::calculate_dl_factor(kmax, jmax, lmax);
+  // 5. Dl factors
+  dl_factor = lsms::calculate_dl_factor(kmax);
 
 }
 
-double lsms::MultipoleMadelung::getMadSum(int i, int j) const{
+double lsms::MultipoleMadelung::getMadSum(int i, int j) const {
   return madsum(i, j);
 }
 

@@ -61,7 +61,7 @@ namespace lsms {
 
   double calculate_eta(Matrix<double> &brav);
 
-  Matrix<double> calculate_dl_factor(int kmax_mad, int jmax_mad, int lmax_mad);
+  Matrix<double> calculate_dl_factor(int lmax);
 
   void calculate_madelung(
       Matrix<double> &madmat,
