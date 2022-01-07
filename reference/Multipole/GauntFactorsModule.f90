@@ -58,7 +58,7 @@ contains
       integer (kind=IntKind), intent(in) :: lmax
       integer (kind=IntKind), intent(in) :: iprint
       !
-      integer (kind=IntKind) :: jmax, kmax, lmax2, jmax2, kmax2
+      integer (kind=IntKind) :: jmax, kmax, lmax2, jmax2, kmax2, i
       !
       if (Initialized) then
          NumInits=NumInits + 1      ! count for number of times initGauntFactors
@@ -108,8 +108,6 @@ contains
       !  get prefators of complex spherical harmonics for l <= lmax2
       !  -------------------------------------------------------------------
       clm=>getClm(lmax2)
-
-
       !  -------------------------------------------------------------------
       !
       !  ===================================================================
@@ -289,6 +287,7 @@ contains
       do j3=1, nj3(k1, k2)
          if (kj3(j3, k1, k2) == k3) then
             cg=cgnt(j3, k1, k2)
+            print *, j3, k1, k2, cg
             return
          endif
       enddo

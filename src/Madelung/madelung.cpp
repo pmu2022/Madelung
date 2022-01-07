@@ -59,14 +59,20 @@ double lsms::scaling_factor(const Matrix<double> &bravais,
 
     // Radius of real space truncation sphere
     nm = real_space_multiplication(r_brav, lmax, eta);
-    auto rscut = trunc_radius(r_brav, lmax, eta, nm);
+    auto rscut = rs_trunc_radius(r_brav, lmax, eta, nm);
+#ifdef LSMS_DEBUG
+    std::cout << nm[0] << " " << nm[1] << " " << nm[2] << std::endl;
+#endif
 
     // Calculate number of lattice vectors
     auto nrslat = num_latt_vectors(r_brav, rscut, nm);
 
     // Radius of reciprocal space
-    nm = reciprocal_space_multiplication(r_brav, lmax, eta);
-    auto kncut = trunc_radius(k_brav, lmax, eta, nm);
+    nm = reciprocal_space_multiplication(k_brav, lmax, eta);
+    auto kncut = kn_trunc_radius(k_brav, lmax, eta, nm);
+#ifdef LSMS_DEBUG
+    std::cout << nm[0] << " " << nm[1] << " " << nm[2] << std::endl;
+#endif
 
     // Calculate number of lattice vectors
     auto nknlat = num_latt_vectors(k_brav, kncut, nm);
@@ -147,7 +153,49 @@ std::vector<int> lsms::real_space_multiplication(const Matrix<double> &brav, int
 }
 
 
-double lsms::trunc_radius(const Matrix<double> &brav, int lmax, double eta, const std::vector<int> &nm) {
+double lsms::rs_trunc_radius(const Matrix<double> &brav, int lmax, double eta, const std::vector<int> &nm) {
+
+  auto cut = 0.0;
+
+  std::vector<double> r(3, 0.0);
+
+  for (int i = 0; i < 3; i++) {
+    r[i] = sqrt(
+        brav(0, i) * brav(0, i) +
+        brav(1, i) * brav(1, i) +
+        brav(2, i) * brav(2, i));
+
+  }
+
+  for (int i = -1; i <= 1; i++) {
+
+    for (int idx = 0; idx < 3; idx++) {
+      r[idx] = i * brav(idx, 0) * nm[0];
+    }
+
+    for (int j = -1; j <= 1; j++) {
+
+      for (int idx = 0; idx < 3; idx++) {
+        r[idx] = r[idx] + j * brav(idx, 1) * nm[1];
+      }
+
+      for (int k = -1; k <= 1; k++) {
+
+        for (int idx = 0; idx < 3; idx++) {
+          r[idx] = r[idx] + k * brav(idx, 2) * nm[2];
+        }
+
+        cut = std::max(cut, norm(r.begin(), r.end()));
+
+      }
+    }
+  }
+
+  return cut;
+
+}
+
+double lsms::kn_trunc_radius(const Matrix<double> &brav, int lmax, double eta, const std::vector<int> &nm) {
 
   auto cut = 0.0;
 
@@ -196,10 +244,9 @@ std::vector<int> lsms::reciprocal_space_multiplication(const Matrix<double> &bra
   std::vector<double> r(3, 0.0);
 
   for (int i = 0; i < 3; i++) {
-    r[i] = std::sqrt(
-        brav(0, i) * brav(0, i) +
+    r[i] =brav(0, i) * brav(0, i) +
         brav(1, i) * brav(1, i) +
-        brav(2, i) * brav(2, i));
+        brav(2, i) * brav(2, i);
 
   }
 
@@ -338,12 +385,13 @@ Matrix<double> lsms::calculate_dl_factor(int lmax_mad) {
   // Variable
   Matrix<double> dl_factor(kmax_mad, jmax_mad);
 
+  // 1. Prefactor
   std::vector<double> factmat(lmax_mad + 1);
   factmat[0] = 1.0;
-
   for (int l = 1; l <= lmax_mad; ++l) {
     factmat[l] = factmat[l - 1] / (2.0 * l + 1.0);
   }
+
 
   Array3d<double> cgnt(lmax_mad + 1,
                        (lmax_mad + 1) * (lmax_mad + 1),
@@ -376,7 +424,9 @@ Matrix<double> lsms::calculate_dl_factor(int lmax_mad) {
       auto gaunt = get_gaunt_factor(cgnt, nj3, kj3, kl_pot, kl_rho, kl);
       dl_factor(kl_rho, jl_pot) = gaunt * factmat[l_pot] * factmat[l_rho];
 
+
     }
+
 
 
   }

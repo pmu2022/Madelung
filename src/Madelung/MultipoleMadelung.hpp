@@ -30,22 +30,20 @@ namespace lsms {
     Array3d<std::complex<double>> dl_matrix;
     Matrix<double> dl_factor;
 
+    double scaling_factor;
+    double rscut;
+    double kncut;
+
+    std::vector<int> r_nm;
+    int nrslat;
+
+    std::vector<int> k_nm;
+    int nknlat;
+
   public:
-
-
-    /// Lattice of the structure
-    Matrix<double> lattice;
-
-    /// Atomic positions
-    Matrix<double> atom_position;
 
     /// Angular-momentum index cutoff l
     int lmax;
-
-    /// Index of local atoms
-    std::vector<int> global_position_index;
-
-
 
     MultipoleMadelung(Matrix<double> lattice,
                       Matrix<double> atom_position,
@@ -56,7 +54,17 @@ namespace lsms {
 
     std::complex<double> getDlMatrix(int g_atom, int k, int l_atom);
 
-    double getDlFactor(int i, int j);
+    double getDlFactor(int i, int j) const;
+
+    double getScalingFactor() const;
+
+    double getRsCut() const;
+
+    double getKnCut() const;
+
+    std::vector<int> getRsSize() const;
+
+    std::vector<int> getKnSize() const;
 
 
   };

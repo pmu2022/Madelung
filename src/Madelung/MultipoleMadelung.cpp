@@ -22,44 +22,39 @@ lsms::MultipoleMadelung::MultipoleMadelung(Matrix<double> lattice,
                                            Matrix<double> atom_position,
                                            int lmax,
                                            std::vector<int> global_position_index) :
-    lattice{lattice},
-    atom_position{atom_position},
-    lmax{lmax},
-    global_position_index{global_position_index} {
+    lmax{lmax} {
 
   num_atoms = atom_position.n_col(); // NOLINT(cppcoreguidelines-narrowing-conversions)
   local_num_atoms = global_position_index.size(); // NOLINT(cppcoreguidelines-narrowing-conversions)
 
-  int jmax = (lmax + 1) * (lmax + 2) / 2;
   int kmax = (lmax + 1) * (lmax + 1);
 
   auto r_brav = lattice;
   auto k_brav = lattice;
 
   // 1. Scaling factors and rescale lattices and atomic positions
-  auto scaling_factor = lsms::scaling_factor(lattice, lmax);
-
+  scaling_factor = lsms::scaling_factor(lattice, lmax);
   r_brav.scale(1.0 / scaling_factor);
 
   //atom_position.scale(1.0 / scaling_factor);
 
   reciprocal_lattice(r_brav, k_brav, scaling_factor);
 
-  auto omegbra = lsms::omega(r_brav);
-  auto alat = scaling_factor * std::cbrt(3.0 * omegbra / (4.0 * M_PI * num_atoms));
+  // auto omegbra = lsms::omega(r_brav);
 
   // 2. Calculate truncation spheres
   auto eta = lsms::calculate_eta(r_brav);
 
   // Real-space
-  auto r_nm = lsms::real_space_multiplication(r_brav, lmax, eta);
-  auto rscut = lsms::trunc_radius(r_brav, lmax, eta, r_nm);
-  auto nrslat = num_latt_vectors(r_brav, rscut, r_nm);
+  r_nm = lsms::real_space_multiplication(r_brav, lmax, eta);
+  rscut = lsms::rs_trunc_radius(r_brav, lmax, eta, r_nm);
+  nrslat = num_latt_vectors(r_brav, rscut, r_nm);
 
   // Reciprocal-space
-  auto k_nm = lsms::reciprocal_space_multiplication(k_brav, lmax, eta);
-  auto kncut = lsms::trunc_radius(k_brav, lmax, eta, k_nm);
-  auto nknlat = num_latt_vectors(k_brav, kncut, k_nm);
+  k_nm = lsms::reciprocal_space_multiplication(k_brav, lmax, eta);
+  kncut = lsms::kn_trunc_radius(k_brav, lmax, eta, k_nm);
+  nknlat = num_latt_vectors(k_brav, kncut, k_nm);
+
 
   // 3. Create the lattices
   Matrix<double> rslat;
@@ -70,8 +65,6 @@ lsms::MultipoleMadelung::MultipoleMadelung(Matrix<double> lattice,
 
   std::tie(rslat, rslatsq) = lsms::create_lattice_and_sq(r_brav, rscut, r_nm, nrslat);
   std::tie(knlat, knlatsq) = lsms::create_lattice_and_sq(k_brav, kncut, k_nm, nknlat);
-
-  auto omega = lsms::omega(r_brav);
 
   // 4. Calculate the Madelung matrix and the prefactor matrix
   madsum = Matrix<double>(num_atoms, local_num_atoms);
@@ -98,7 +91,7 @@ lsms::MultipoleMadelung::MultipoleMadelung(Matrix<double> lattice,
   }
 
   // 5. Dl factors
-  dl_factor = lsms::calculate_dl_factor(kmax);
+  dl_factor = lsms::calculate_dl_factor(lmax);
 
 }
 
@@ -110,9 +103,31 @@ std::complex<double> lsms::MultipoleMadelung::getDlMatrix(int i, int k, int j) {
   return dl_matrix(i, k, j);
 }
 
-double lsms::MultipoleMadelung::getDlFactor(int i, int j) {
+double lsms::MultipoleMadelung::getDlFactor(int i, int j) const {
   return dl_factor(i, j);
 }
+
+double lsms::MultipoleMadelung::getScalingFactor() const {
+  return scaling_factor;
+}
+
+double lsms::MultipoleMadelung::getRsCut() const {
+  return rscut;
+}
+
+double lsms::MultipoleMadelung::getKnCut() const {
+  return kncut;
+}
+
+std::vector<int> lsms::MultipoleMadelung::getKnSize() const {
+  return k_nm;
+}
+
+std::vector<int> lsms::MultipoleMadelung::getRsSize() const {
+  return r_nm;
+}
+
+
 
 
 

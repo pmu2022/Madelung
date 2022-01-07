@@ -278,7 +278,6 @@ contains
          enddo
          nullify(factmat)
       endif
-
       !
       do i = 1, LocalNumAtoms
          !     ================================================================
@@ -287,13 +286,6 @@ contains
          call madewd(i, GlobalIndex(i))
          !     ----------------------------------------------------------------
       enddo
-
-      print * , DL_factor(1,1)
-      print * , DL_factor(1,2)
-      print * , DL_factor(1,3)
-      print * , DL_factor(1,4)
-      print * , DL_factor(1,5)
-
       !
       if (jmax_mad > 1) then
          deallocate(Ylm, cspace, ctmp)
@@ -389,12 +381,23 @@ contains
          vbrak(1, 3) = vfac * (vbrar(2, 1) * vbrar(3, 2) - vbrar(3, 1) * vbrar(2, 2))
          vbrak(2, 3) = vfac * (vbrar(3, 1) * vbrar(1, 2) - vbrar(1, 1) * vbrar(3, 2))
          vbrak(3, 3) = vfac * (vbrar(1, 1) * vbrar(2, 2) - vbrar(2, 1) * vbrar(1, 2))
+
+         !print *, vbrar(1:3, 1)
+         !print *, vbrar(1:3, 2)
+         !print *, vbrar(1:3, 3)
+
+         !print *, vbrak(1:3, 1)
+         !print *, vbrak(1:3, 2)
+         !print *, vbrak(1:3, 3)
+
+
          !
          !     ================================================================
          !     calculate rscut, the radius of real space truncation sphere.....
          !     ----------------------------------------------------------------
          call getrscut(vbrar(1:3, 1), vbrar(1:3, 2), vbrar(1:3, 3), rscut, nm1, nm2, nm3)
          call numlat(vbrar, rscut, nm1, nm2, nm3, nrslat)
+         !print *, nm1, nm2, nm3
          !     ----------------------------------------------------------------
          !
          !     ================================================================
@@ -406,6 +409,7 @@ contains
          !if(PrintLevel.ge.1) then
          !   print *, "ALAT", vbrar(1,1), vbrar(2,2), vbrar(3,3), eta
          !   print *, "RS", rscut, "KN", kncut, "RSLAT", nrslat, "KNLAT", nknlat, "SC", sfac
+         !   print *, nm1, nm2, nm3
          !endif
 
          !     ----------------------------------------------------------------

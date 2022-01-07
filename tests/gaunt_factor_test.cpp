@@ -81,3 +81,27 @@ TEST(GauntFactorTest, Lmax3) {
 }
 
 
+/**
+ * Test the Gaunt factors
+ */
+TEST(GauntFactorTest, Lmax3Full) {
+
+  int lmax = 3;
+  int kmax = (lmax + 1) * (lmax + 1);
+
+  Matrix<int> nj3(kmax, kmax);
+  Array3d<int> kj3(lmax + 1, kmax, kmax);
+  Array3d<double> cgnt(lmax + 1, kmax, kmax);
+
+  gaunt_factor(&lmax, &cgnt[0], &kj3[0], &nj3[0]);
+
+  for(int i = 0; i < kmax; i++) {
+    EXPECT_NEAR(cgnt(0,0,i),  0.28209479177387842, 1e-12);
+  }
+
+}
+
+
+
+
+

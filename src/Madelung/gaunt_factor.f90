@@ -186,7 +186,7 @@ contains
                !           ----------------------------------------------------------
                ctemp = clll(l1, m1, l2, m2, l3, m3, wg, lm3p1, plmg, lmax_3, clm)
                !           ----------------------------------------------------------
-               if(abs(ctemp).gt.tol) then
+               if(abs(ctemp)>tol) then
                   if(j3count < MaxJ3) then
                      j3count = j3count + 1
                      cgnt(j3count, kl1, kl2) = ctemp
@@ -235,8 +235,7 @@ contains
       integer :: ifac3
       integer :: jl3
       integer :: m
-      integer :: m1m(-lmax : lmax)
-
+      integer, target, allocatable :: m1m(:)
 
       real (kind = dp) :: clll
 
@@ -254,12 +253,13 @@ contains
       !  *******************************************************************
       !
 
-      m1m(0)=1
-      do m = 1, lmax
-         m1m(m)  = -m1m(m-1)
-         m1m(-m) =  m1m(m)
-      enddo
+      allocate(m1m(-lmax:lmax))
 
+      m1m(0) = 1
+      do m = 1, lmax
+         m1m(m) = -m1m(m - 1)
+         m1m(-m) = m1m(m)
+      enddo
 
       if(l1.gt.lmax .or. l2.gt.lmax .or. l3.gt.lmax) then
          print *, 'CLLL', 'bad parameters: l1,l2,l3,lmax', l1, l2, l3, lmax
@@ -274,9 +274,9 @@ contains
          return
       else
          !     ----------------------------------------------------------------
-         call defac(l1, m1, ifac1, jl1)
-         call defac(l2, -m2, ifac2, jl2)
-         call defac(l3, m3, ifac3, jl3)
+         call prefac(l1, m1, ifac1, jl1, m1m, lmax)
+         call prefac(l2, -m2, ifac2, jl2, m1m, lmax)
+         call prefac(l3, m3, ifac3, jl3, m1m, lmax)
          !     ----------------------------------------------------------------
          do ng = 1, ngauss
             clll = clll + wg(ng) * plmg(jl1, ng) * plmg(jl2, ng) * plmg(jl3, ng)
@@ -292,22 +292,24 @@ contains
    end function clll
 
 
-   subroutine defac(l, m, ifac, jl)
+   subroutine prefac(l, m, ifac, jl, m1m, lmax)
 
       integer, intent(in) :: l
       integer, intent(in) :: m
       integer, intent(out) :: ifac
       integer, intent(out) :: jl
+      integer, intent(in) :: lmax
+      integer, intent(inout) :: m1m(-lmax:lmax)
 
       if (m>=0) then
          ifac = 1
          jl = (l + 1) * (l + 2) / 2 - l + m
       else
-         ifac = -1 ** m
+         ifac = m1m(m)
          jl = (l + 1) * (l + 2) / 2 - l - m
       end if
 
-   end subroutine defac
+   end subroutine prefac
 
 end module gaunt_factor_mod
 

@@ -36,7 +36,12 @@ namespace lsms {
   /**
    * Get radius of truncation sphere
    */
-  double trunc_radius(const Matrix<double> &brav,
+  double rs_trunc_radius(const Matrix<double> &brav,
+                      int lmax,
+                      double eta,
+                      const std::vector<int> &nm);
+
+  double kn_trunc_radius(const Matrix<double> &brav,
                       int lmax,
                       double eta,
                       const std::vector<int> &nm);
