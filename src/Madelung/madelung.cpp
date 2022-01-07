@@ -16,6 +16,7 @@
 #include "spherical_harmonics.hpp"
 #include "common.hpp"
 #include "gaunt_factor.hpp"
+#include "madelung_term.hpp"
 
 double lsms::scaling_factor(const Matrix<double> &bravais,
                             int lmax,
@@ -219,214 +220,98 @@ std::vector<int> lsms::reciprocal_space_multiplication(const Matrix<double> &bra
 }
 
 
+void lsms::calculate_madelung_matrix(int myatom,
+                                     int id,
 
+                                     int lmax_mad,
+                                     double eta,
+                                     double a0,
 
+                                     Matrix<double> &r_brav,
+                                     Matrix<double> &atom_position,
 
-/**
- * Reciprocal space term of Madelung sum:
- *
- *                                       2   2       -> ->
- *                4*pi          1    -eta *Kq /4 - i*Kq*aij
- *       term1 =  ---- * sum  ----- e
- *                tau    q<>0    2
- *                             Kq
- *
- *       note sum starts at 2 since kn=0.0 of 1/(rs-aij) is
- *       canceled by kn=0.0 of the 1/rs sum.
- *
- */
-static double reciprocal_space_term(Matrix<double> &knlat,
-                                    std::vector<double> &knlatsq,
-                                    std::vector<double> &aij,
-                                    int nknlat,
-                                    double eta,
-                                    double omega) {
+                                     Matrix<double> &rslat,
+                                     std::vector<double> &rslatsq,
 
-  auto term12 = 0.0;
-  auto fac = eta * eta / 4.0;
+                                     Matrix<double> &knlat,
+                                     std::vector<double> &knlatsq,
 
-  for (int i = nknlat - 1; i > 0; i--) {
-    term12 += std::exp(-fac * knlatsq[i]) / knlatsq[i]
-              * std::cos(knlat(0, i) * aij[0]
-                         + knlat(1, i) * aij[1]
-                         + knlat(2, i) * aij[2]);
-  }
-  term12 = 4.0 * M_PI / omega * term12;
+                                     Matrix<double> &madmat,
+                                     Array3d<std::complex<double>> &dl_matrix) {
 
-  return term12;
-}
+  int num_atoms = atom_position.n_col();
+  int nrslat = rslatsq.size();
+  int nknlat = knlatsq.size();
 
-/**
- * Real space term of Madelung sum:
- *
- *                              ->   ->
- *                     1 - erf(|Rn + aij|/eta)
- *        term2 = sum -------------------------
- *                 n         ->   ->
- *                         |Rn + aij|
- *
- *        note for calculation of aij=0.0 term ibegin=2.
- *
- */
-template<class T>
-static T real_space_term(Matrix<T> &rslat,
-                         std::vector<T> &aij,
-                         int nrslat,
-                         int ibegin,
-                         T eta) {
+  int kmax_mad = get_kmax(lmax_mad);
+  int jmax_mad = get_jmax(lmax_mad);
 
-  /*
-  *  subtract aij from rslat and calculate rslatmd which is used in
-  *  calculating the real-space integral
-  *  rslatmd, and aij are in the units of a0 = 1
-  */
+  auto omega = lsms::omega(r_brav);
+  auto alat = a0 * std::cbrt(3.0 * omega / (4.0 * M_PI * num_atoms));
 
-  std::vector<T> rslatmd(nrslat);
+  // Auxiliar variables
+  std::vector<double> aij(3);
+  double r0tm;
+  int ibegin;
 
-  for (auto i = 0; i < nrslat; i++) {
+  // First terms
+  auto term0 = -M_PI * eta * eta / omega;
 
-    rslatmd[i] = std::sqrt(
-        (rslat(0, i) - aij[0]) * (rslat(0, i) - aij[0])
-        + (rslat(1, i) - aij[1]) * (rslat(1, i) - aij[1])
-        + (rslat(2, i) - aij[2]) * (rslat(2, i) - aij[2]));
+  for (int n = 0; n < num_atoms; n++) {
 
-
-  }
-
-  auto rterm = 0.0;
-
-  for (auto i = nrslat - 1; i >= ibegin; i--) {
-    rterm += std::erfc(rslatmd[i] / eta) / rslatmd[i];
-  }
-
-
-  return rterm;
-
-}
-
-
-/**
- *
- * Dl sum
- *
- */
-static std::vector<std::complex<double>> dlsum(
-    std::vector<double> &aij,
-    Matrix<double> &rslat,
-    int nrslat,
-    int ibegin,
-    Matrix<double> &knlat,
-    int nknlat,
-    double omega,
-    int lmax_mad,
-    int kmax_mad,
-    double eta) {
-
-  std::vector<std::complex<double>> Ylm(kmax_mad, std::complex<double>(0.0, 0.0));
-  std::vector<double> vec(3);
-  std::vector<std::complex<double>> dlm(kmax_mad, 0.0);
-
-  auto aij2 = std::inner_product(aij.begin(), aij.end(), aij.begin(), 0.0);
-  auto lofk = lsms::get_lofk(lmax_mad);
-
-  /*
-   * The unit of DL_matrix needs to be resumed to a0 = alat later
-   */
-  for (int i = nrslat - 1; i >= ibegin; i--) {
-
-    for (int j = 0; j < 3; j++) {
-      vec[j] = aij[j] + rslat(j, i);
+    // a_ij in unit of a0
+    for (int idx = 0; idx < 3; idx++) {
+      aij[idx] = atom_position(idx, myatom) / a0 - atom_position(idx, n) / a0;
     }
 
-    auto vlen = norm(vec.begin(), vec.end());
-
-    // Ylm
-    sph_harm_1(vec.data(), &lmax_mad, Ylm.data());
-
-    // Gamma
-    auto gamma_l = gamma_func(vlen / eta, lmax_mad);
-
-    auto vhalf = 0.5 * vlen;
-
-    for (auto kl = kmax_mad - 1; kl > 0; kl--) {
-      auto l = lofk[kl];
-      dlm[kl] = dlm[kl] + gamma_l[l] * Ylm[kl] / std::pow(vhalf, l + 1);
-    }
-
-    // std::printf("%16.12f %16.12f %16.12f %16.12f %16.12e\n", vec[0], vec[1], vec[2], vlen, gamma_l[lofk[kmax_mad - 1]]);
-  }
-
-  auto rfac = 4.0 * std::sqrt(M_PI);
-  for (int i = 1; i < kmax_mad; ++i) {
-    dlm[i] *= rfac;
-  }
-
-  /*
-   *
-   */
-  rfac = -eta * eta / 4.0;
-
-  std::vector<std::complex<double>> ctmp(kmax_mad, 0.0);
-
-  for (int i = nknlat - 1; i > 0; i--) {
-
-    for (int j = 0; j < 3; j++) {
-      vec[j] = knlat(j, i);
-    }
-
-    auto vlen = norm(vec.begin(), vec.end());
-    auto knlatsq = norm_sq(vec.begin(), vec.end());
-
-    //std::printf("%16.12f %16.12f %16.12f %16.12f %16.12f\n", vec[0], vec[1], vec[2], vlen, knlatsq);
-
-    // Ylm
-    sph_harm_1(vec.data(), &lmax_mad, Ylm.data());
-
-    auto expfac = std::exp(rfac * knlatsq) / knlatsq;
-
-
-    double tfac;
-    double sintfac, costfac;
-
-    if (aij2 > 1e-8) {
-      tfac = -(knlat(0, i) * aij[0] + knlat(1, i) * aij[1] + knlat(2, i) * aij[2]);
-      sintfac = sin(tfac);
-      costfac = cos(tfac);
+    // Real space terms: first terms
+    if (n == myatom) {
+      ibegin = 1;
+      r0tm = -2.0 / std::sqrt(M_PI) / eta;
     } else {
-      tfac = 0.0;
-      sintfac = 0.0;
-      costfac = 1.0;
+      ibegin = 0;
+      r0tm = 0.0;
     }
 
-    auto cfac = -vlen;
-    for (auto l = 1; l <= lmax_mad; l += 2) {
-      for (auto m = -l; m <= l; m++) {
-        auto kl = (l + 1) * (l + 1) - l + m - 1;
-        ctmp[kl] = ctmp[kl] + expfac * cfac * sintfac * Ylm[kl];
+    // Reciprocal space term
+    auto term1 = reciprocal_space_term(knlat,
+                                       knlatsq,
+                                       aij,
+                                       nknlat,
+                                       eta,
+                                       omega);
+
+
+    // Real space term
+    auto term2 = real_space_term(rslat, aij, nrslat, ibegin, eta);
+
+    madmat(n, id) = term1 + term2 + r0tm + term0;
+    madmat(n, id) = madmat(n, id) / a0;
+
+
+    if (jmax_mad > 1) {
+
+      // 1. First factor for k = 0
+      dl_matrix(n, 0, id) = madmat(n, id) * Y0inv;
+
+      std::vector<std::complex<double>> dlm(kmax_mad, 0.0);
+
+      auto lofk = lsms::get_lofk(kmax_mad);
+      dlm = dlsum(aij, rslat, nrslat, ibegin, knlat, nknlat, omega, lmax_mad, kmax_mad, eta);
+
+      // 2. Calculate all other factors
+      for (int kl = 1; kl < kmax_mad; kl++) {
+        auto l = lofk[kl];
+        dl_matrix(n, kl, id) = dlm[kl] * std::pow(alat / a0, l) / a0;
       }
-      cfac = -cfac * knlatsq;
+
     }
-
-    cfac = -knlatsq;
-    for (auto l = 2; l <= lmax_mad; l += 2) {
-      for (auto m = -l; m <= l; m++) {
-        auto kl = (l + 1) * (l + 1) - l + m - 1;
-        ctmp[kl] = ctmp[kl] + expfac * cfac * costfac * Ylm[kl];
-      }
-      cfac = -cfac * knlatsq;
-    }
-
   }
-
-  rfac = 16.0 * M_PI * M_PI / omega;
-
-  for (auto i = 1; i < kmax_mad; i++) {
-    dlm[i] = dlm[i] + rfac * ctmp[i];
-  }
-
-  return dlm;
-
 }
+
+
+
+
 
 /**
  * Calculate the madelung constants
@@ -530,6 +415,7 @@ void lsms::calculate_madelung(
 
 }
 
+
 double lsms::calculate_eta(Matrix<double> &bravais) {
 
   auto a0 = sqrt(bravais(0, 0) * bravais(0, 0) +
@@ -605,4 +491,6 @@ Matrix<double> lsms::calculate_dl_factor(int lmax_mad) {
 
   return dl_factor;
 }
+
+
 

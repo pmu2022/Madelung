@@ -13,6 +13,8 @@ target_sources(MultipoleMadelung
         madelung.cpp
         madelung.hpp
 
+        madelung_term.hpp
+
         integer_factors.hpp
         integer_factors.cpp
 

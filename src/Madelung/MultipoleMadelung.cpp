@@ -40,7 +40,9 @@ lsms::MultipoleMadelung::MultipoleMadelung(Matrix<double> lattice,
   auto scaling_factor = lsms::scaling_factor(lattice, lmax);
 
   r_brav.scale(1.0 / scaling_factor);
-  atom_position.scale(1.0 / scaling_factor);
+
+  //atom_position.scale(1.0 / scaling_factor);
+
   reciprocal_lattice(r_brav, k_brav, scaling_factor);
 
   auto omegbra = lsms::omega(r_brav);
@@ -75,29 +77,23 @@ lsms::MultipoleMadelung::MultipoleMadelung(Matrix<double> lattice,
   madsum = Matrix<double>(num_atoms, local_num_atoms);
   dl_matrix = Array3d<std::complex<double>>(num_atoms, kmax, local_num_atoms);
 
-  for (auto i = 0; i < num_atoms; i++) {
+  for (auto i{0}; i < global_position_index.size(); i++) {
 
-    lsms::calculate_madelung(
-        madsum,
-        dl_matrix,
-        atom_position,
-        num_atoms,
-        num_atoms,
-        i, // id
-        i, // myid
-        jmax,
-        kmax,
+    lsms::calculate_madelung_matrix(
+        global_position_index[i],
+        i,
         lmax,
-        omega,
         eta,
         scaling_factor,
-        alat,
-        nrslat,
+        r_brav,
+        atom_position,
         rslat,
         rslatsq,
-        nknlat,
         knlat,
-        knlatsq);
+        knlatsq,
+        madsum,
+        dl_matrix
+    );
 
   }
 

@@ -23,7 +23,7 @@ namespace lsms {
                         int lmax,
                         int max_iter = 100,
                         double fstep = 0.02
-                        );
+  );
 
   /**
    * Number of lattice vectors
@@ -53,10 +53,33 @@ namespace lsms {
   * Get size of reciprocal lattice multiplications
   */
   std::vector<int> reciprocal_space_multiplication(const Matrix<double> &brav,
-                                             int lmax,
-                                             double eta);
+                                                   int lmax,
+                                                   double eta);
 
 
+  /**
+   *
+   */
+  void calculate_madelung_matrix(
+      int myatom,
+      int id,
+
+      int lmax_mad,
+      double eta,
+      double a0,
+
+      Matrix<double> &r_brav,
+      Matrix<double> &atom_position,
+
+      Matrix<double> &rslat,
+      std::vector<double> &rslatsq,
+
+      Matrix<double> &knlat,
+      std::vector<double> &knlatsq,
+
+      Matrix<double> &madmat,
+      Array3d<std::complex<double>> &dl_matrix
+  );
 
 
   double calculate_eta(Matrix<double> &brav);
