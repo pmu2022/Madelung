@@ -11,33 +11,21 @@
 
 namespace lsms {
 
+class ConfigFactory {
+ public:
+  virtual MadelungConfig createConfig() = 0;
+};
 
-  class ConfigFactory {
+class YAMLConfigFactory : public ConfigFactory {
+ private:
+  std::string path;
 
+ public:
+  explicit YAMLConfigFactory(const std::string &path);
 
-  public:
+  MadelungConfig createConfig() override;
+};
 
-    virtual MadelungConfig createConfig() = 0;
+}  // namespace lsms
 
-  };
-
-
-  class YAMLConfigFactory : public ConfigFactory {
-
-  private:
-
-    std::string path;
-
-  public:
-
-    explicit YAMLConfigFactory(const std::string &path);
-
-    MadelungConfig createConfig() override;
-
-  };
-
-
-}
-
-
-#endif //MADELUNG_IO_HPP
+#endif  // MADELUNG_IO_HPP

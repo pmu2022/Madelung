@@ -54,12 +54,16 @@ lsms::MultipoleMadelung::MultipoleMadelung(Matrix<double> lattice,
 
   auto eta = lsms::calculate_eta(r_brav);
 
-
-  lsms::real_space_trunc(r_brav, lmax, eta, rscut, r_nm);
+  // Real-space
+  r_nm = lsms::real_space_multiplication(r_brav, lmax, eta);
+  rscut = lsms::trunc_radius(r_brav, lmax, eta, r_nm);
 
   auto nrslat = num_latt_vectors(r_brav, rscut, r_nm);
 
-  reciprocal_space_trunc(k_brav, lmax, eta, kncut, k_nm);
+  // Reciprocal-space
+  k_nm = lsms::reciprocal_space_multiplication(k_brav, lmax, eta);
+  kncut = lsms::trunc_radius(k_brav, lmax, eta, k_nm);
+
   auto nknlat = num_latt_vectors(k_brav, kncut, k_nm);
 
   // 3. Create the lattices

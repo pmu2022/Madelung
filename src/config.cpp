@@ -4,18 +4,15 @@
 
 #include "config.hpp"
 
-#include "common/Matrix.hpp"
-
-#include <iostream>
-#include <iomanip>
 #include <cstdlib>
-
+#include <iomanip>
+#include <iostream>
 #include <variant>
 
+#include "common/Matrix.hpp"
 
-template<class T>
+template <class T>
 static std::ostream &operator<<(std::ostream &os, Matrix<T> &v) {
-
   for (auto i = 0; i < v.n_row(); i++) {
     for (auto j = 0; j < v.n_col(); j++) {
       os << v(i, j) << " ";
@@ -26,12 +23,10 @@ static std::ostream &operator<<(std::ostream &os, Matrix<T> &v) {
   return os;
 }
 
-
 void lsms::print_config(lsms::MadelungConfig &config) {
-
   std::cout << "Name:          " << config.name << std::endl;
   std::cout << "Lmax:          " << config.lmax << std::endl;
   std::cout << "Lattice:       " << std::endl << config.lattice << std::endl;
-  std::cout << "Atom position: " << std::endl << config.atom_position << std::endl;
-
+  std::cout << "Atom position: " << std::endl
+            << config.atom_position << std::endl;
 }

@@ -2,25 +2,22 @@
 // Created by F.Moitzi on 05.01.2022.
 //
 
-
-#include <iostream>
-#include <iomanip>
-#include <cstdlib>
-#include <tuple>
-
-#include <map>
-#include <any>
-#include <variant>
-#include <optional>
-#include <string>
 #include <assert.h>
 
-#include "yaml-cpp/yaml.h"
+#include <any>
+#include <cstdlib>
+#include <iomanip>
+#include <iostream>
+#include <map>
+#include <optional>
+#include <string>
+#include <tuple>
+#include <variant>
 
 #include "MultipoleMadelung.hpp"
-
 #include "config.hpp"
 #include "io.hpp"
+#include "yaml-cpp/yaml.h"
 
 int main(int argc, char *argv[]) {
   std::cout << "argc == " << argc << '\n';
@@ -28,7 +25,8 @@ int main(int argc, char *argv[]) {
   for (int ndx{}; ndx != argc; ++ndx) {
     std::cout << "argv[" << ndx << "] == " << std::quoted(argv[ndx]) << '\n';
   }
-  std::cout << "argv[" << argc << "] == " << static_cast<void *>(argv[argc]) << '\n';
+  std::cout << "argv[" << argc << "] == " << static_cast<void *>(argv[argc])
+            << '\n';
 
   /*
    * Load a yaml script
@@ -52,12 +50,8 @@ int main(int argc, char *argv[]) {
   Matrix<double> dl_factor;
 
   // Calculate the madelung matrix and all values
-  std::tie(madsum, dl_matrix, dl_factor) = lsms::get_madelung(num_atoms,
-                                                              config.lmax,
-                                                              config.lattice,
-                                                              config.atom_position);
+  std::tie(madsum, dl_matrix, dl_factor) = lsms::get_madelung(
+      num_atoms, config.lmax, config.lattice, config.atom_position);
 
-
-  return argc == 3 ? EXIT_SUCCESS : EXIT_FAILURE; // optional return value
+  return argc == 3 ? EXIT_SUCCESS : EXIT_FAILURE;  // optional return value
 }
-

@@ -34,21 +34,20 @@ namespace lsms {
 
 
   /**
+   * Get radius of truncation sphere
+   */
+  double trunc_radius(const Matrix<double> &brav,
+                      int lmax,
+                      double eta,
+                      const std::vector<int> &nm);
+
+  /**
    * Get size of lattice multiplications
    */
   std::vector<int> real_space_multiplication(const Matrix<double> &brav,
                                              int lmax,
                                              double eta);
 
-
-
-  /**
-   * Get radius of truncation sphere
-   */
-  double trunc_radius(const Matrix<double> &brav,
-                                 int lmax,
-                                 double eta,
-                                 const std::vector<int> &nm);
 
   /**
   * Get size of reciprocal lattice multiplications
@@ -58,27 +57,6 @@ namespace lsms {
                                              double eta);
 
 
-  /*
-
-  void real_space_trunc(Matrix<double> &brav,
-                        int lmax_mad,
-                        double eta,
-                        double &rscut,
-                        std::vector<int> &nm);
-
-  void reciprocal_space_trunc(Matrix<double> &brav,
-                              int lmax_mad,
-                              double eta,
-                              double &rscut,
-                              std::vector<int> &nm);
-                              */
-
-
-
-  std::tuple<Matrix<double>, Array3d<std::complex<double>>, Matrix<double> > get_madelung(int num_atoms,
-                                                                                          int lmax,
-                                                                                          Matrix<double> &bravais,
-                                                                                          Matrix<double> &atom_position);
 
 
   double calculate_eta(Matrix<double> &brav);

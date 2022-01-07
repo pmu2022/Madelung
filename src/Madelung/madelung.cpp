@@ -119,7 +119,6 @@ int lsms::num_latt_vectors(const Matrix<double> &brav, double cut, const std::ve
 
 }
 
-
 std::vector<int> lsms::real_space_multiplication(const Matrix<double> &brav, int lmax, double eta) {
 
   std::vector<int> nm(3);
@@ -190,7 +189,6 @@ double lsms::trunc_radius(const Matrix<double> &brav, int lmax, double eta, cons
 }
 
 
-
 std::vector<int> lsms::reciprocal_space_multiplication(const Matrix<double> &brav, int lmax, double eta) {
 
   std::vector<int> nm(3);
@@ -222,131 +220,6 @@ std::vector<int> lsms::reciprocal_space_multiplication(const Matrix<double> &bra
 
 
 
-
-/**
- ***************************************************************************
- ***************************************************************************
- ***************************************************************************
- */
-
-
-
-void lsms::real_space_trunc(Matrix<double> &brav,
-                            int lmax_mad,
-                            double eta,
-                            double &rscut,
-                            std::vector<int> &nm) {
-
-  rscut = 0.0;
-
-  std::vector<double> r(3, 0.0);
-
-  for (int i = 0; i < 3; i++) {
-    r[i] = sqrt(
-        brav(0, i) * brav(0, i) +
-        brav(1, i) * brav(1, i) +
-        brav(2, i) * brav(2, i));
-
-  }
-
-
-  for (int i = 0; i < 3; i++) {
-    nm[i] = 0;
-    auto term = 1.0;
-    while (term > 0.5 * lsms::EPSI) {
-      nm[i]++;
-      auto gamma = gamma_func(nm[i] * r[i] / eta, lmax_mad);
-      term = gamma[lmax_mad] / std::pow((nm[i] * r[i] / 2.0), lmax_mad + 1);
-    }
-  }
-
-
-  for (int i = -1; i <= 1; i++) {
-
-    for (int idx = 0; idx < 3; idx++) {
-      r[idx] = i * brav(idx, 0) * nm[0];
-    }
-
-    for (int j = -1; j <= 1; j++) {
-
-      for (int idx = 0; idx < 3; idx++) {
-        r[idx] = r[idx] + j * brav(idx, 1) * nm[1];
-      }
-
-      for (int k = -1; k <= 1; k++) {
-
-        for (int idx = 0; idx < 3; idx++) {
-          r[idx] = r[idx] + k * brav(idx, 2) * nm[2];
-        }
-
-        rscut = std::max(rscut, norm(r.begin(), r.end()));
-
-      }
-    }
-  }
-
-
-}
-
-void lsms::reciprocal_space_trunc(Matrix<double> &brav,
-                                  int lmax_mad,
-                                  double eta,
-                                  double &kncut,
-                                  std::vector<int> &nm) {
-
-  auto fac = eta * eta / 4.0;
-
-  kncut = 0.0;
-
-  std::vector<double> r(3, 0.0);
-
-
-  for (int i = 0; i < 3; i++) {
-    r[i] = brav(0, i) * brav(0, i) +
-           brav(1, i) * brav(1, i) +
-           brav(2, i) * brav(2, i);
-
-  }
-
-
-  for (int i = 0; i < 3; i++) {
-    nm[i] = 0;
-
-    auto term = 1.0;
-    while (term > 0.5 * lsms::EPSI) {
-      nm[i]++;
-      auto rm = nm[i] * nm[i] * r[i];
-      term = exp(-fac * rm) * std::pow(sqrt(rm), lmax_mad - 2);
-    }
-
-  }
-
-
-  for (int i = -1; i <= 1; i++) {
-
-    for (int idx = 0; idx < 3; idx++) {
-      r[idx] = i * brav(idx, 0) * nm[0];
-    }
-
-    for (int j = -1; j <= 1; j++) {
-
-      for (int idx = 0; idx < 3; idx++) {
-        r[idx] = r[idx] + j * brav(idx, 1) * nm[1];
-      }
-
-      for (int k = -1; k <= 1; k++) {
-
-        for (int idx = 0; idx < 3; idx++) {
-          r[idx] = r[idx] + k * brav(idx, 2) * nm[2];
-        }
-
-        kncut = std::max(kncut, norm(r.begin(), r.end()));
-
-      }
-    }
-  }
-
-}
 
 
 /**
@@ -729,94 +602,4 @@ Matrix<double> lsms::calculate_dl_factor(int kmax_mad, int jmax_mad, int lmax_ma
 
   return dl_factor;
 }
-
-std::tuple<Matrix<double>, Array3d<std::complex<double>>, Matrix<double> >
-lsms::get_madelung(int num_atoms, int lmax, Matrix<double> &bravais, Matrix<double> &atom_position) {
-
-
-  int jmax = (lmax + 1) * (lmax + 2) / 2;
-  int kmax = (lmax + 1) * (lmax + 1);
-
-
-  auto r_brav = bravais;
-  auto k_brav = bravais;
-
-  // 1. Scaling factors and rescale lattices and atomic positions
-  auto scaling_factor = lsms::scaling_factor(bravais, lmax);
-
-  r_brav.scale(1.0 / scaling_factor);
-  atom_position.scale(1.0 / scaling_factor);
-  reciprocal_lattice(r_brav, k_brav, scaling_factor);
-
-
-  auto omegbra = lsms::omega(r_brav);
-  auto alat = scaling_factor * std::cbrt(3.0 * omegbra / (4.0 * M_PI * num_atoms));
-
-  // 2. Calculate truncation spheres
-  std::vector<int> r_nm(3);
-  std::vector<int> k_nm(3);
-  double rscut = 0.0;
-  double kncut = 0.0;
-
-  auto eta = lsms::calculate_eta(r_brav);
-  real_space_trunc(r_brav, lmax, eta, rscut, r_nm);
-  auto nrslat = num_latt_vectors(r_brav, rscut, r_nm);
-
-  reciprocal_space_trunc(k_brav, lmax, eta, kncut, k_nm);
-  auto nknlat = num_latt_vectors(k_brav, kncut, k_nm);
-
-  // 3. Create the lattices
-  Matrix<double> rslat;
-  std::vector<double> rslatsq;
-
-  Matrix<double> knlat;
-  std::vector<double> knlatsq;
-
-
-  std::tie(rslat, rslatsq) = lsms::create_lattice_and_sq(r_brav, rscut, r_nm, nrslat);
-  std::tie(knlat, knlatsq) = lsms::create_lattice_and_sq(k_brav, kncut, k_nm, nknlat);
-
-  auto omega = lsms::omega(r_brav);
-
-  // 4. Calculate the madelung matrix
-  Matrix<double> madsum(num_atoms, num_atoms);
-
-  // 5. Calculate DL matrix
-  Array3d<std::complex<double>> DL_matrix(num_atoms, kmax, num_atoms);
-
-  for (auto i = 0; i < num_atoms; i++) {
-
-    lsms::calculate_madelung(
-        madsum,
-        DL_matrix,
-        atom_position,
-        num_atoms,
-        num_atoms,
-        i, // id
-        i, // myid
-        jmax,
-        kmax,
-        lmax,
-        omega,
-        eta,
-        scaling_factor,
-        alat,
-        nrslat,
-        rslat,
-        rslatsq,
-        nknlat,
-        knlat,
-        knlatsq);
-
-  }
-
-  // 6. Dl factors
-  auto dl_factor = lsms::calculate_dl_factor(kmax, jmax, lmax);
-
-  return std::make_tuple(madsum, DL_matrix, dl_factor);
-
-}
-
-
-
 

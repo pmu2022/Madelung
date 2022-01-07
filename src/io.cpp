@@ -4,13 +4,10 @@
 
 #include "io.hpp"
 
+#include "common/Matrix.hpp"
 #include "yaml-cpp/yaml.h"
 
-#include "common/Matrix.hpp"
-
-
 lsms::MadelungConfig lsms::YAMLConfigFactory::createConfig() {
-
   YAML::Node yaml = YAML::LoadFile("config.yaml");
 
   // L cutoff
@@ -41,10 +38,8 @@ lsms::MadelungConfig lsms::YAMLConfigFactory::createConfig() {
     }
   }
 
-
   return {name, lmax, lattice, atom_position};
 }
 
-lsms::YAMLConfigFactory::YAMLConfigFactory(const std::string &path) : path{path} {
-
-}
+lsms::YAMLConfigFactory::YAMLConfigFactory(const std::string &path)
+    : path{path} {}
