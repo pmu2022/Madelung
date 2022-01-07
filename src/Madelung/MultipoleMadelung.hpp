@@ -32,11 +32,6 @@ namespace lsms {
 
   public:
 
-    /*
-     * There is actually no reason why this is needed
-     *
-     * Multipole madelung should just store the results even scaling of atom position is bull shit
-     */
 
     /// Lattice of the structure
     Matrix<double> lattice;
@@ -49,7 +44,6 @@ namespace lsms {
 
     /// Index of local atoms
     std::vector<int> global_position_index;
-
 
 
 

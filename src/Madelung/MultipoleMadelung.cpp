@@ -47,23 +47,16 @@ lsms::MultipoleMadelung::MultipoleMadelung(Matrix<double> lattice,
   auto alat = scaling_factor * std::cbrt(3.0 * omegbra / (4.0 * M_PI * num_atoms));
 
   // 2. Calculate truncation spheres
-  std::vector<int> r_nm(3);
-  std::vector<int> k_nm(3);
-  double rscut = 0.0;
-  double kncut = 0.0;
-
   auto eta = lsms::calculate_eta(r_brav);
 
   // Real-space
-  r_nm = lsms::real_space_multiplication(r_brav, lmax, eta);
-  rscut = lsms::trunc_radius(r_brav, lmax, eta, r_nm);
-
+  auto r_nm = lsms::real_space_multiplication(r_brav, lmax, eta);
+  auto rscut = lsms::trunc_radius(r_brav, lmax, eta, r_nm);
   auto nrslat = num_latt_vectors(r_brav, rscut, r_nm);
 
   // Reciprocal-space
-  k_nm = lsms::reciprocal_space_multiplication(k_brav, lmax, eta);
-  kncut = lsms::trunc_radius(k_brav, lmax, eta, k_nm);
-
+  auto k_nm = lsms::reciprocal_space_multiplication(k_brav, lmax, eta);
+  auto kncut = lsms::trunc_radius(k_brav, lmax, eta, k_nm);
   auto nknlat = num_latt_vectors(k_brav, kncut, k_nm);
 
   // 3. Create the lattices
