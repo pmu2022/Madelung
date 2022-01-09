@@ -286,6 +286,15 @@ contains
          call madewd(i, GlobalIndex(i))
          !     ----------------------------------------------------------------
       enddo
+
+      block
+         integer :: i
+         do i = 1, kmax_mad
+            print *, DL_matrix(1, i, 1)
+         end do
+      end block
+
+
       !
       if (jmax_mad > 1) then
          deallocate(Ylm, cspace, ctmp)
@@ -382,14 +391,6 @@ contains
          vbrak(2, 3) = vfac * (vbrar(3, 1) * vbrar(1, 2) - vbrar(1, 1) * vbrar(3, 2))
          vbrak(3, 3) = vfac * (vbrar(1, 1) * vbrar(2, 2) - vbrar(2, 1) * vbrar(1, 2))
 
-         !print *, vbrar(1:3, 1)
-         !print *, vbrar(1:3, 2)
-         !print *, vbrar(1:3, 3)
-
-         !print *, vbrak(1:3, 1)
-         !print *, vbrak(1:3, 2)
-         !print *, vbrak(1:3, 3)
-
 
          !
          !     ================================================================
@@ -397,7 +398,6 @@ contains
          !     ----------------------------------------------------------------
          call getrscut(vbrar(1:3, 1), vbrar(1:3, 2), vbrar(1:3, 3), rscut, nm1, nm2, nm3)
          call numlat(vbrar, rscut, nm1, nm2, nm3, nrslat)
-         !print *, nm1, nm2, nm3
          !     ----------------------------------------------------------------
          !
          !     ================================================================

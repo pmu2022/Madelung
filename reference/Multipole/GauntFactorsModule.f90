@@ -287,7 +287,6 @@ contains
       do j3=1, nj3(k1, k2)
          if (kj3(j3, k1, k2) == k3) then
             cg=cgnt(j3, k1, k2)
-            print *, j3, k1, k2, cg
             return
          endif
       enddo
