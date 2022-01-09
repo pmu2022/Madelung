@@ -5,6 +5,7 @@ add_subdirectory(common)
 
 add_subdirectory(Madelung)
 
+add_subdirectory(Misc)
 
 add_executable(Madelung main.cpp)
 
@@ -25,6 +26,7 @@ target_sources(Madelung PUBLIC
         )
 
 target_link_libraries(Madelung PUBLIC MultipoleMadelung)
+
 
 
 target_link_libraries(Madelung PUBLIC yaml-cpp)

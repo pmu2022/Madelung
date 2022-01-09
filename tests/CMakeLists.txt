@@ -16,6 +16,8 @@ add_executable(legendre_test legendre_test.cpp)
 target_link_libraries(legendre_test PUBLIC multipole_madelung)
 target_link_libraries(legendre_test PUBLIC MultipoleMadelung)
 target_link_libraries(legendre_test PUBLIC gtest_main)
+find_package(GSL REQUIRED)
+target_link_libraries(legendre_test PUBLIC GSL::gsl)
 
 # 2. Test spherical harmonics
 add_executable(spherical_harmonics_test
@@ -48,6 +50,14 @@ add_executable(
 target_link_libraries(regression_test PUBLIC multipole_madelung)
 target_link_libraries(regression_test PUBLIC MultipoleMadelung)
 target_link_libraries(regression_test PUBLIC gtest_main)
+
+# 6. Test Madelung potentials
+add_executable(
+        multi_array_test multi_array_test.cpp
+)
+target_link_libraries(multi_array_test PUBLIC multipole_madelung)
+target_link_libraries(multi_array_test PUBLIC MultipoleMadelung)
+target_link_libraries(multi_array_test PUBLIC gtest_main)
 
 # Discover all tests
 include(GoogleTest)
