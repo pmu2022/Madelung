@@ -4,8 +4,8 @@
 
 #include "gaunt_factor.hpp"
 
-double get_gaunt_factor(Array3d<double> &cgnt, Matrix<int> &nj3, Array3d<int> &kj3, int k1, int k2, int k3) {
-
+double lsms::get_gaunt_factor(lsms::array3d<double> &cgnt, lsms::matrix<int> &nj3,
+                              lsms::array3d<int> &kj3, int k1, int k2, int k3) {
   double cg = 0.0;
 
   for (auto j3 = 0; j3 < nj3(k1, k2); j3++) {
@@ -15,6 +15,4 @@ double get_gaunt_factor(Array3d<double> &cgnt, Matrix<int> &nj3, Array3d<int> &k
   }
 
   return cg;
-
 }
-

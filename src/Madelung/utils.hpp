@@ -7,10 +7,10 @@
 
 #define _USE_MATH_DEFINES
 
-#include "math.h"
-
+#include <cmath>
 #include <vector>
 #include <numeric>
+#include <algorithm>
 
 template<typename Iter_T>
 auto norm(Iter_T first, Iter_T last) {

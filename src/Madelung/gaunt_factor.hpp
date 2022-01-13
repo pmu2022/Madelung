@@ -5,21 +5,16 @@
 #ifndef MADELUNG_GAUNT_FACTOR_HPP
 #define MADELUNG_GAUNT_FACTOR_HPP
 
-#include "Matrix.hpp"
-#include "Array3d.hpp"
+#include "common.hpp"
 
-extern "C"
-{
+extern "C" {
 void gaunt_factor(int *lmax, double *cgnt, int *kj3, int *nj3);
 }
 
-double get_gaunt_factor(Array3d<double> &cgnt,
-                        Matrix<int> &nj3,
-                        Array3d<int> &kj3,
-                        int k1,
-                        int k2,
-                        int k3);
+namespace lsms {
 
+  double get_gaunt_factor(array3d<double> &cgnt, matrix<int> &nj3,
+                          array3d<int> &kj3, int k1, int k2, int k3);
+}
 
-
-#endif //MADELUNG_GAUNT_FACTOR_HPP
+#endif  // MADELUNG_GAUNT_FACTOR_HPP

@@ -6,26 +6,22 @@
 
 #define _USE_MATH_DEFINES
 
-#include <cmath>
 #include <algorithm>
-#include <vector>
 #include <complex>
+#include <vector>
 
-#include "Matrix.hpp"
-#include "Array3d.hpp"
-
-
-#include "madelung.hpp"
 #include "lattice_utils.hpp"
+#include "madelung.hpp"
 
-lsms::MultipoleMadelung::MultipoleMadelung(Matrix<double> lattice,
-                                           Matrix<double> atom_position,
-                                           int lmax,
-                                           std::vector<int> global_position_index) :
-    lmax{lmax} {
+lsms::MultipoleMadelung::MultipoleMadelung(
+    matrix<double> lattice,
+    matrix<double> atom_position,
+    int lmax,
+    std::vector<int> global_position_index)
+    : lmax{lmax} {
 
-  num_atoms = atom_position.n_col(); // NOLINT(cppcoreguidelines-narrowing-conversions)
-  local_num_atoms = global_position_index.size(); // NOLINT(cppcoreguidelines-narrowing-conversions)
+  num_atoms = atom_position[1];  // NOLINT(cppcoreguidelines-narrowing-conversions)
+  local_num_atoms = global_position_index.size();  // NOLINT(cppcoreguidelines-narrowing-conversions)
 
   int kmax = (lmax + 1) * (lmax + 1);
 
@@ -36,7 +32,7 @@ lsms::MultipoleMadelung::MultipoleMadelung(Matrix<double> lattice,
   scaling_factor = lsms::scaling_factor(lattice, lmax);
   r_brav.scale(1.0 / scaling_factor);
 
-  //atom_position.scale(1.0 / scaling_factor);
+  // atom_position.scale(1.0 / scaling_factor);
 
   reciprocal_lattice(r_brav, k_brav, scaling_factor);
 
@@ -55,44 +51,30 @@ lsms::MultipoleMadelung::MultipoleMadelung(Matrix<double> lattice,
   kncut = lsms::kn_trunc_radius(k_brav, lmax, eta, k_nm);
   nknlat = num_latt_vectors(k_brav, kncut, k_nm);
 
-
   // 3. Create the lattices
-  Matrix<double> rslat;
+  matrix<double> rslat;
   std::vector<double> rslatsq;
 
-  Matrix<double> knlat;
+  matrix<double> knlat;
   std::vector<double> knlatsq;
 
-  std::tie(rslat, rslatsq) = lsms::create_lattice_and_sq(r_brav, rscut, r_nm, nrslat);
-  std::tie(knlat, knlatsq) = lsms::create_lattice_and_sq(k_brav, kncut, k_nm, nknlat);
+  std::tie(rslat, rslatsq) =
+      lsms::create_lattice_and_sq(r_brav, rscut, r_nm, nrslat);
+  std::tie(knlat, knlatsq) =
+      lsms::create_lattice_and_sq(k_brav, kncut, k_nm, nknlat);
 
   // 4. Calculate the Madelung matrix and the prefactor matrix
-  madsum = Matrix<double>(num_atoms, local_num_atoms);
-  dl_matrix = Array3d<std::complex<double>>(num_atoms, kmax, local_num_atoms);
+  madsum = matrix<double>(num_atoms, local_num_atoms);
+  dl_matrix = array3d<std::complex<double>>(num_atoms, kmax, local_num_atoms);
 
   for (auto i{0}; i < global_position_index.size(); i++) {
-
     lsms::calculate_madelung_matrix(
-        global_position_index[i],
-        i,
-        lmax,
-        eta,
-        scaling_factor,
-        r_brav,
-        atom_position,
-        rslat,
-        rslatsq,
-        knlat,
-        knlatsq,
-        madsum,
-        dl_matrix
-    );
-
+        global_position_index[i], i, lmax, eta, scaling_factor, r_brav,
+        atom_position, rslat, rslatsq, knlat, knlatsq, madsum, dl_matrix);
   }
 
   // 5. Dl factors
   dl_factor = lsms::calculate_dl_factor(lmax);
-
 }
 
 double lsms::MultipoleMadelung::getMadSum(int i, int j) const {
@@ -111,24 +93,10 @@ double lsms::MultipoleMadelung::getScalingFactor() const {
   return scaling_factor;
 }
 
-double lsms::MultipoleMadelung::getRsCut() const {
-  return rscut;
-}
+double lsms::MultipoleMadelung::getRsCut() const { return rscut; }
 
-double lsms::MultipoleMadelung::getKnCut() const {
-  return kncut;
-}
+double lsms::MultipoleMadelung::getKnCut() const { return kncut; }
 
-std::vector<int> lsms::MultipoleMadelung::getKnSize() const {
-  return k_nm;
-}
+std::vector<int> lsms::MultipoleMadelung::getKnSize() const { return k_nm; }
 
-std::vector<int> lsms::MultipoleMadelung::getRsSize() const {
-  return r_nm;
-}
-
-
-
-
-
-
+std::vector<int> lsms::MultipoleMadelung::getRsSize() const { return r_nm; }

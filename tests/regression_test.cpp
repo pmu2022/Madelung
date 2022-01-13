@@ -11,6 +11,8 @@
 #include <iostream>
 #include <vector>
 
+#include "common.hpp"
+
 #include "multipole_madelung.h"
 
 #include "MultipoleMadelung.hpp"
@@ -24,14 +26,14 @@ TEST(RegressionTestSuite, Structure1) {
   std::vector<int> gindex{0, 1};
   int lmax = 3;
 
-  Matrix<double> lattice(3, 3);
+  lsms::matrix<double> lattice(3, 3);
 
   lattice = 0;
   lattice(0, 0) = 1.0;
   lattice(1, 1) = 1.0;
   lattice(2, 2) = 1.0;
 
-  Matrix<double> position(3, num_atoms);
+  lsms::matrix<double> position(3, num_atoms);
 
   position(0, 0) = 0.0;
   position(1, 0) = 0.0;
@@ -71,7 +73,7 @@ TEST(RegressionTestSuite, Structure2) {
   std::vector<int> gindex{0, 2};
   int lmax = 3;
 
-  Matrix<double> bravais(3, 3);
+  lsms::matrix<double> bravais(3, 3);
   bravais = 0.0;
 
   bravais(0, 0) = 1.1;
@@ -87,7 +89,7 @@ TEST(RegressionTestSuite, Structure2) {
   bravais(2, 2) = 1.6;
 
 
-  Matrix<double> position(3, num_atoms);
+  lsms::matrix<double> position(3, num_atoms);
 
   position(0, 0) = 0.0;
   position(1, 0) = 0.0;

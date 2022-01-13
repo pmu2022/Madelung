@@ -27,7 +27,5 @@ target_sources(Madelung PUBLIC
 
 target_link_libraries(Madelung PUBLIC MultipoleMadelung)
 
-
-
 target_link_libraries(Madelung PUBLIC yaml-cpp)
 target_include_directories(Madelung PUBLIC ${yaml-cpp_SOURCE_DIR}/include)

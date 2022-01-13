@@ -4,44 +4,37 @@
 
 #include "madelung.hpp"
 
-
 #define _USE_MATH_DEFINES
 
-#include <cmath>
 #include <algorithm>
+#include <cmath>
 
-#include "lattice_utils.hpp"
-#include "utils.hpp"
-#include "integer_factors.hpp"
-#include "spherical_harmonics.hpp"
-#include "common.hpp"
 #include "gaunt_factor.hpp"
+#include "integer_factors.hpp"
+#include "lattice_utils.hpp"
 #include "madelung_term.hpp"
+#include "spherical_harmonics.hpp"
+#include "utils.hpp"
 
-double lsms::scaling_factor(const Matrix<double> &bravais,
-                            int lmax,
-                            int max_iter,
-                            double fstep) {
-
-
-
+double lsms::scaling_factor(const lsms::matrix<double> &bravais, int lmax,
+                            int max_iter, double fstep) {
   // Scaled bravais lattice
-  Matrix<double> r_brav(3, 3);
+  lsms::matrix<double> r_brav(3, 3);
   // Scaled reciprocal lattice
-  Matrix<double> k_brav(3, 3);
+  lsms::matrix<double> k_brav(3, 3);
 
   // Get the shortest axis
-  auto a0 = std::sqrt(bravais(0, 0) * bravais(0, 0) +
-                      bravais(1, 0) * bravais(1, 0) +
-                      bravais(2, 0) * bravais(2, 0));
+  auto a0 =
+      std::sqrt(bravais(0, 0) * bravais(0, 0) + bravais(1, 0) * bravais(1, 0) +
+                bravais(2, 0) * bravais(2, 0));
 
-  auto a1 = std::sqrt(bravais(0, 1) * bravais(0, 1) +
-                      bravais(1, 1) * bravais(1, 1) +
-                      bravais(2, 1) * bravais(2, 1));
+  auto a1 =
+      std::sqrt(bravais(0, 1) * bravais(0, 1) + bravais(1, 1) * bravais(1, 1) +
+                bravais(2, 1) * bravais(2, 1));
 
-  auto a2 = std::sqrt(bravais(0, 2) * bravais(0, 2) +
-                      bravais(1, 2) * bravais(1, 2) +
-                      bravais(2, 2) * bravais(2, 2));
+  auto a2 =
+      std::sqrt(bravais(0, 2) * bravais(0, 2) + bravais(1, 2) * bravais(1, 2) +
+                bravais(2, 2) * bravais(2, 2));
 
   double scaling_fac = std::min({a0, a1, a2});
   auto eta = 0.5 + 0.1 * std::max({a0, a1, a2}) / scaling_fac;
@@ -50,7 +43,6 @@ double lsms::scaling_factor(const Matrix<double> &bravais,
   std::vector<int> nm(3);
 
   for (int i = 0; i <= max_iter; i++) {
-
     r_brav = bravais;
     r_brav.scale(1 / scaling_fac);
     k_brav = 0.0;
@@ -79,7 +71,8 @@ double lsms::scaling_factor(const Matrix<double> &bravais,
 
 #ifdef LSMS_DEBUG
     std::printf("ALAT: %f %f %f\n", r_brav(0, 0), r_brav(1, 1), r_brav(2, 2));
-    std::printf("RS: %f KN: %f RSLAT: %d KNLAT: %d SC: %f\n", rscut, kncut, nrslat, nknlat, scaling_fac);
+    std::printf("RS: %f KN: %f RSLAT: %d KNLAT: %d SC: %f\n", rscut, kncut,
+                nrslat, nknlat, scaling_fac);
 #endif
 
     if (nknlat < nrslat / 2) {
@@ -89,14 +82,13 @@ double lsms::scaling_factor(const Matrix<double> &bravais,
     } else {
       break;
     }
-
   }
 
   return scaling_fac;
 }
 
-int lsms::num_latt_vectors(const Matrix<double> &brav, double cut, const std::vector<int> &nm) {
-
+int lsms::num_latt_vectors(const lsms::matrix<double> &brav, double cut,
+                           const std::vector<int> &nm) {
   int number = 0;
 
   // To also include vectors on the boarder
@@ -107,7 +99,6 @@ int lsms::num_latt_vectors(const Matrix<double> &brav, double cut, const std::ve
   for (int x = -nm[0]; x <= nm[0]; x++) {
     for (int y = -nm[1]; y <= nm[1]; y++) {
       for (int z = -nm[2]; z <= nm[2]; z++) {
-
         vn[0] = x * brav(0, 0) + y * brav(0, 1) + z * brav(0, 2);
         vn[1] = x * brav(1, 0) + y * brav(1, 1) + z * brav(0, 2);
         vn[2] = x * brav(2, 0) + y * brav(2, 1) + z * brav(0, 2);
@@ -117,26 +108,21 @@ int lsms::num_latt_vectors(const Matrix<double> &brav, double cut, const std::ve
         if (norm <= vcut2) {
           number++;
         }
-
       }
     }
   }
 
   return number;
-
 }
 
-std::vector<int> lsms::real_space_multiplication(const Matrix<double> &brav, int lmax, double eta) {
-
+std::vector<int> lsms::real_space_multiplication(
+    const lsms::matrix<double> &brav, int lmax, double eta) {
   std::vector<int> nm(3);
   std::vector<double> r(3, 0.0);
 
   for (int i = 0; i < 3; i++) {
-    r[i] = std::sqrt(
-        brav(0, i) * brav(0, i) +
-        brav(1, i) * brav(1, i) +
-        brav(2, i) * brav(2, i));
-
+    r[i] = std::sqrt(brav(0, i) * brav(0, i) + brav(1, i) * brav(1, i) +
+                     brav(2, i) * brav(2, i));
   }
 
   for (int i = 0; i < 3; i++) {
@@ -152,102 +138,82 @@ std::vector<int> lsms::real_space_multiplication(const Matrix<double> &brav, int
   return nm;
 }
 
-
-double lsms::rs_trunc_radius(const Matrix<double> &brav, int lmax, double eta, const std::vector<int> &nm) {
-
+double lsms::rs_trunc_radius(const lsms::matrix<double> &brav, int lmax,
+                             double eta, const std::vector<int> &nm) {
   auto cut = 0.0;
 
   std::vector<double> r(3, 0.0);
 
   for (int i = 0; i < 3; i++) {
-    r[i] = sqrt(
-        brav(0, i) * brav(0, i) +
-        brav(1, i) * brav(1, i) +
-        brav(2, i) * brav(2, i));
-
+    r[i] = sqrt(brav(0, i) * brav(0, i) + brav(1, i) * brav(1, i) +
+                brav(2, i) * brav(2, i));
   }
 
   for (int i = -1; i <= 1; i++) {
-
     for (int idx = 0; idx < 3; idx++) {
       r[idx] = i * brav(idx, 0) * nm[0];
     }
 
     for (int j = -1; j <= 1; j++) {
-
       for (int idx = 0; idx < 3; idx++) {
         r[idx] = r[idx] + j * brav(idx, 1) * nm[1];
       }
 
       for (int k = -1; k <= 1; k++) {
-
         for (int idx = 0; idx < 3; idx++) {
           r[idx] = r[idx] + k * brav(idx, 2) * nm[2];
         }
 
         cut = std::max(cut, norm(r.begin(), r.end()));
-
       }
     }
   }
 
   return cut;
-
 }
 
-double lsms::kn_trunc_radius(const Matrix<double> &brav, int lmax, double eta, const std::vector<int> &nm) {
-
+double lsms::kn_trunc_radius(const lsms::matrix<double> &brav, int lmax,
+                             double eta, const std::vector<int> &nm) {
   auto cut = 0.0;
 
   std::vector<double> r(3, 0.0);
 
   for (int i = 0; i < 3; i++) {
-    r[i] = sqrt(
-        brav(0, i) * brav(0, i) +
-        brav(1, i) * brav(1, i) +
-        brav(2, i) * brav(2, i));
-
+    r[i] = sqrt(brav(0, i) * brav(0, i) + brav(1, i) * brav(1, i) +
+                brav(2, i) * brav(2, i));
   }
 
   for (int i = -1; i <= 1; i++) {
-
     for (int idx = 0; idx < 3; idx++) {
       r[idx] = i * brav(idx, 0) * nm[0];
     }
 
     for (int j = -1; j <= 1; j++) {
-
       for (int idx = 0; idx < 3; idx++) {
         r[idx] = r[idx] + j * brav(idx, 1) * nm[1];
       }
 
       for (int k = -1; k <= 1; k++) {
-
         for (int idx = 0; idx < 3; idx++) {
           r[idx] = r[idx] + k * brav(idx, 2) * nm[2];
         }
 
         cut = std::max(cut, norm(r.begin(), r.end()));
-
       }
     }
   }
 
   return cut;
-
 }
 
-
-std::vector<int> lsms::reciprocal_space_multiplication(const Matrix<double> &brav, int lmax, double eta) {
-
+std::vector<int> lsms::reciprocal_space_multiplication(
+    const lsms::matrix<double> &brav, int lmax, double eta) {
   std::vector<int> nm(3);
   std::vector<double> r(3, 0.0);
 
   for (int i = 0; i < 3; i++) {
-    r[i] =brav(0, i) * brav(0, i) +
-        brav(1, i) * brav(1, i) +
-        brav(2, i) * brav(2, i);
-
+    r[i] = brav(0, i) * brav(0, i) + brav(1, i) * brav(1, i) +
+           brav(2, i) * brav(2, i);
   }
 
   auto fac = eta * eta / 4.0;
@@ -260,33 +226,21 @@ std::vector<int> lsms::reciprocal_space_multiplication(const Matrix<double> &bra
       auto rm = nm[i] * nm[i] * r[i];
       term = exp(-fac * rm) * std::pow(sqrt(rm), lmax - 2);
     }
-
   }
 
   return nm;
 }
 
+void lsms::calculate_madelung_matrix(
+    int myatom, int id,
+    int lmax_mad, double eta, double a0,
+    lsms::matrix<double> &r_brav, lsms::matrix<double> &atom_position,
+    lsms::matrix<double> &rslat, std::vector<double> &rslatsq,
+    lsms::matrix<double> &knlat, std::vector<double> &knlatsq,
+    lsms::matrix<double> &madmat,
+    lsms::array3d<std::complex<double>> &dl_matrix) {
 
-void lsms::calculate_madelung_matrix(int myatom,
-                                     int id,
-
-                                     int lmax_mad,
-                                     double eta,
-                                     double a0,
-
-                                     Matrix<double> &r_brav,
-                                     Matrix<double> &atom_position,
-
-                                     Matrix<double> &rslat,
-                                     std::vector<double> &rslatsq,
-
-                                     Matrix<double> &knlat,
-                                     std::vector<double> &knlatsq,
-
-                                     Matrix<double> &madmat,
-                                     Array3d<std::complex<double>> &dl_matrix) {
-
-  int num_atoms = atom_position.n_col();
+  int num_atoms = atom_position[1];
   int nrslat = rslatsq.size();
   int nknlat = knlatsq.size();
 
@@ -305,7 +259,6 @@ void lsms::calculate_madelung_matrix(int myatom,
   auto term0 = -M_PI * eta * eta / omega;
 
   for (int n = 0; n < num_atoms; n++) {
-
     // a_ij in unit of a0
     for (int idx = 0; idx < 3; idx++) {
       aij[idx] = atom_position(idx, myatom) / a0 - atom_position(idx, n) / a0;
@@ -321,13 +274,7 @@ void lsms::calculate_madelung_matrix(int myatom,
     }
 
     // Reciprocal space term
-    auto term1 = reciprocal_space_term(knlat,
-                                       knlatsq,
-                                       aij,
-                                       nknlat,
-                                       eta,
-                                       omega);
-
+    auto term1 = reciprocal_space_term(knlat, knlatsq, aij, nknlat, eta, omega);
 
     // Real space term
     auto term2 = real_space_term(rslat, aij, nrslat, ibegin, eta);
@@ -335,55 +282,46 @@ void lsms::calculate_madelung_matrix(int myatom,
     madmat(n, id) = term1 + term2 + r0tm + term0;
     madmat(n, id) = madmat(n, id) / a0;
 
-
     if (jmax_mad > 1) {
-
       // 1. First factor for k = 0
       dl_matrix(n, 0, id) = madmat(n, id) * Y0inv;
 
       std::vector<std::complex<double>> dlm(kmax_mad, 0.0);
 
       auto lofk = lsms::get_lofk(kmax_mad);
-      dlm = dlsum(aij, rslat, nrslat, ibegin, knlat, nknlat, omega, lmax_mad, kmax_mad, eta);
+      dlm = dlsum(aij, rslat, nrslat, ibegin, knlat, nknlat, omega, lmax_mad,
+                  kmax_mad, eta);
 
       // 2. Calculate all other factors
       for (int kl = 1; kl < kmax_mad; kl++) {
         auto l = lofk[kl];
         dl_matrix(n, kl, id) = dlm[kl] * std::pow(alat / a0, l) / a0;
       }
-
     }
   }
 }
 
-double lsms::calculate_eta(Matrix<double> &bravais) {
-
-  auto a0 = sqrt(bravais(0, 0) * bravais(0, 0) +
-                 bravais(1, 0) * bravais(1, 0) +
+double lsms::calculate_eta(lsms::matrix<double> &bravais) {
+  auto a0 = sqrt(bravais(0, 0) * bravais(0, 0) + bravais(1, 0) * bravais(1, 0) +
                  bravais(2, 0) * bravais(2, 0));
 
-  auto a1 = sqrt(bravais(0, 1) * bravais(0, 1) +
-                 bravais(1, 1) * bravais(1, 1) +
+  auto a1 = sqrt(bravais(0, 1) * bravais(0, 1) + bravais(1, 1) * bravais(1, 1) +
                  bravais(2, 1) * bravais(2, 1));
 
-  auto a2 = sqrt(bravais(0, 2) * bravais(0, 2) +
-                 bravais(1, 2) * bravais(1, 2) +
+  auto a2 = sqrt(bravais(0, 2) * bravais(0, 2) + bravais(1, 2) * bravais(1, 2) +
                  bravais(2, 2) * bravais(2, 2));
-
 
   auto scaling_fac = std::min({a0, a1, a2});
 
   return 0.5 + 0.1 * std::max({a0, a1, a2}) / scaling_fac;
-
 }
 
-Matrix<double> lsms::calculate_dl_factor(int lmax_mad) {
-
+lsms::matrix<double> lsms::calculate_dl_factor(int lmax_mad) {
   int kmax_mad = get_kmax(lmax_mad);
   int jmax_mad = get_jmax(lmax_mad);
 
   // Variable
-  Matrix<double> dl_factor(kmax_mad, jmax_mad);
+  lsms::matrix<double> dl_factor(kmax_mad, jmax_mad);
 
   // 1. Prefactor
   std::vector<double> factmat(lmax_mad + 1);
@@ -392,13 +330,11 @@ Matrix<double> lsms::calculate_dl_factor(int lmax_mad) {
     factmat[l] = factmat[l - 1] / (2.0 * l + 1.0);
   }
 
+  lsms::array3d<double> cgnt(lmax_mad + 1, (lmax_mad + 1) * (lmax_mad + 1),
+                             (lmax_mad + 1) * (lmax_mad + 1));
 
-  Array3d<double> cgnt(lmax_mad + 1,
-                       (lmax_mad + 1) * (lmax_mad + 1),
-                       (lmax_mad + 1) * (lmax_mad + 1));
-
-  Matrix<int> nj3(kmax_mad, kmax_mad);
-  Array3d<int> kj3(lmax_mad + 1, kmax_mad, kmax_mad);
+  lsms::matrix<int> nj3(kmax_mad, kmax_mad);
+  lsms::array3d<int> kj3(lmax_mad + 1, kmax_mad, kmax_mad);
 
   gaunt_factor(&lmax_mad, &cgnt[0], &kj3[0], &nj3[0]);
 
@@ -423,17 +359,8 @@ Matrix<double> lsms::calculate_dl_factor(int lmax_mad) {
 
       auto gaunt = get_gaunt_factor(cgnt, nj3, kj3, kl_pot, kl_rho, kl);
       dl_factor(kl_rho, jl_pot) = gaunt * factmat[l_pot] * factmat[l_rho];
-
-
     }
-
-
-
   }
-
 
   return dl_factor;
 }
-
-
-

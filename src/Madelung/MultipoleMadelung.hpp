@@ -5,73 +5,60 @@
 #ifndef MADELUNG_MULTIPOLEMADELUNG_HPP
 #define MADELUNG_MULTIPOLEMADELUNG_HPP
 
-#include "Matrix.hpp"
-#include "Array3d.hpp"
-
-#include <vector>
 #include <complex>
+#include <vector>
+
+#include "common.hpp"
 
 namespace lsms {
 
+class MultipoleMadelung {
+ private:
+  /// Global number of atoms
+  int num_atoms;
 
+  /// Local number of atoms
+  int local_num_atoms;
 
-  class MultipoleMadelung {
+  /// Madelung Matrix values
+  matrix<double> madsum;
+  array3d<std::complex<double>> dl_matrix;
+  matrix<double> dl_factor;
 
-  private:
+  double scaling_factor;
+  double rscut;
+  double kncut;
 
-    /// Global number of atoms
-    int num_atoms;
+  std::vector<int> r_nm;
+  int nrslat;
 
-    /// Local number of atoms
-    int local_num_atoms;
+  std::vector<int> k_nm;
+  int nknlat;
 
-    /// Madelung Matrix values
-    Matrix<double> madsum;
-    Array3d<std::complex<double>> dl_matrix;
-    Matrix<double> dl_factor;
+ public:
+  /// Angular-momentum index cutoff l
+  int lmax;
 
-    double scaling_factor;
-    double rscut;
-    double kncut;
+  MultipoleMadelung(matrix<double> lattice, matrix<double> atom_position,
+                    int lmax, std::vector<int> global_position_index);
 
-    std::vector<int> r_nm;
-    int nrslat;
+  double getMadSum(int i, int j) const;
 
-    std::vector<int> k_nm;
-    int nknlat;
+  std::complex<double> getDlMatrix(int g_atom, int k, int l_atom);
 
-  public:
+  double getDlFactor(int i, int j) const;
 
-    /// Angular-momentum index cutoff l
-    int lmax;
+  double getScalingFactor() const;
 
-    MultipoleMadelung(Matrix<double> lattice,
-                      Matrix<double> atom_position,
-                      int lmax,
-                      std::vector<int> global_position_index);
+  double getRsCut() const;
 
-    double getMadSum(int i, int j) const;
+  double getKnCut() const;
 
-    std::complex<double> getDlMatrix(int g_atom, int k, int l_atom);
+  std::vector<int> getRsSize() const;
 
-    double getDlFactor(int i, int j) const;
+  std::vector<int> getKnSize() const;
+};
 
-    double getScalingFactor() const;
+}  // namespace lsms
 
-    double getRsCut() const;
-
-    double getKnCut() const;
-
-    std::vector<int> getRsSize() const;
-
-    std::vector<int> getKnSize() const;
-
-
-  };
-
-
-
-}
-
-
-#endif //MADELUNG_MULTIPOLEMADELUNG_HPP
+#endif  // MADELUNG_MULTIPOLEMADELUNG_HPP

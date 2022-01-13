@@ -38,6 +38,56 @@ namespace lsms {
 
   using size_t = std::size_t;
 
+  template<class T>
+  class ArrayItem {
+
+    using iterator = typename std::vector<ArrayItem<T>>::iterator;
+    using const_iterator = typename std::vector<ArrayItem<T>>::const_iterator;
+
+  private:
+
+    bool is_array_;
+    std::vector<ArrayItem<T>> v_;
+    T val_;
+
+  public:
+
+
+    explicit ArrayItem(const std::vector<ArrayItem<T>> &a)
+        : is_array_{true}, v_(a), val_{0} {
+    }
+
+    ArrayItem(std::initializer_list<ArrayItem<T>> list)
+        : is_array_{true}, v_(list), val_{0} {
+    }
+
+    ArrayItem(T val) // Cannot be explicit
+        : is_array_{false}, val_{val} {
+    }
+
+    ArrayItem() : is_array_{false} {};
+
+    ArrayItem(const ArrayItem &) = default;
+
+    ArrayItem(ArrayItem &&) noexcept = default;
+
+    bool is_array() const { return is_array_; }
+
+    size_t size() const { return v_.size(); }
+
+    T value() const { return val_; }
+
+    iterator begin() { return v_.begin(); }
+
+    iterator end() { return v_.end(); }
+
+    const_iterator begin() const { return v_.begin(); };
+
+    const_iterator end() const { return v_.end(); };
+
+
+  };
+
 
   class ColumnMajor {
 
@@ -89,6 +139,67 @@ namespace lsms {
 
     allocator_t<T> allocator_; // allocator
 
+    void dim_from_initializer_list(const ArrayItem<T> &init, size_t shape) {
+      bool is_array = false;
+      size_t size = 0;
+
+      size_t i = 0;
+      for (const auto &item : init) {
+
+        if (i == 0) {
+          is_array = item.is_array();
+          size = item.size();
+          if (shape < N) {
+            shape_[shape++] = init.size();
+            if (is_array) {
+              dim_from_initializer_list(item, shape);
+            }
+          }
+        } else {
+
+          if (is_array) {
+
+            if (!item.is_array() || item.size() != size) {
+
+              throw std::invalid_argument("initializer list contains non-conforming shapes");
+
+            }
+
+          } else if (shape != N) {
+
+            throw std::invalid_argument("initializer list incompatible with array dimensionality");
+
+          }
+        }
+
+        ++i;
+      }
+    }
+
+
+    void data_from_initializer_list(const ArrayItem<T> &init, array_t<N> &indices, size_t index) {
+      size_t i = 0;
+      for (const auto &item : init) {
+        indices[index] = i;
+
+        if (item.is_array()) {
+
+          data_from_initializer_list(item, indices, index + 1);
+
+        } else {
+
+          size_t offset = get_offset<N>(strides_, indices);
+          if (offset < size()) {
+            data_[offset] = item.value();
+          }
+
+        }
+
+        ++i;
+      }
+    }
+
+
   public:
 
 
@@ -99,9 +210,12 @@ namespace lsms {
 
     template<typename... Args>
     explicit NDArray(size_t i, Args... args) : shape_{i, args...} {
+      static_assert(sizeof...(args) != N, "Number of arguments are wrong!");
       size_ = std::accumulate(std::begin(shape_), std::end(shape_), 1, std::multiplies<decltype(N)>());
       ColumnMajor::calculate_strides<N>(shape_, strides_);
       data_ = allocator_.allocate(size_);
+      T def{};
+      std::fill_n(data_, size_, def);
     };
 
     ~NDArray() {
@@ -117,19 +231,6 @@ namespace lsms {
       std::copy(other.data_, other.data_ + other.size_, data_);
     }
 
-    friend void swap(NDArray &first, NDArray &second) {
-      std::swap(first.data_, second.data_);
-      std::swap(first.size_, second.size_);
-      std::swap(first.shape_, second.shape_);
-      std::swap(first.strides_, second.strides_);
-    }
-
-    NDArray &operator=(NDArray other) {
-      swap(*this, other);
-      return *this;
-    }
-
-    // Performant way of how to implement it
     NDArray(NDArray &&other) noexcept
         : data_(std::exchange(other.data_, nullptr)),
           size_(std::move(other.size())),
@@ -137,34 +238,65 @@ namespace lsms {
           strides_(std::move(other.strides_)) {
     };
 
+    friend void assign(NDArray &lhs, const NDArray &rhs) {
+      lhs.size_ = rhs.size_;
+      lhs.shape_ = rhs.shape_;
+      lhs.strides_ = rhs.strides_;
+    }
+
+    NDArray &operator=(const NDArray &other) {
+
+      if (this != &other) {
+        assign(*this, other);
+        data_ = allocator_.allocate(other.size_);
+        std::copy(other.data_, other.data_ + other.size_, data_);
+      }
+      return *this;
+    }
+
+
     NDArray &operator=(NDArray &&other) noexcept {
-
       if (data_) allocator_.deallocate(data_, size_);
-
       data_ = std::exchange(other.data_, nullptr);
       size_ = std::move(other.size());
       shape_ = std::move(other.shape_);
       strides_ = std::move(other.strides_);
-
       return *this;
     };
 
 
     // get access operator
     template<typename... Indices>
-    inline T &operator()(Indices... indices) {
-      return data_[get_offset<N>(strides_, indices...)];
+    inline T &operator()(size_t i, Indices... indices) {
+      static_assert(sizeof...(indices) != N, "Number of arguments are wrong!");
+      return data_[get_offset<N>(strides_, i, indices...)];
     }
 
     template<typename... Indices>
-    inline const T &operator()(Indices... indices) const {
-      return data_[get_offset<N>(strides_, indices...)];
+    inline const T &operator()(size_t i, Indices... indices) const {
+      static_assert(sizeof...(indices) != N, "Number of arguments are wrong!");
+      return data_[get_offset<N>(strides_, i, indices...)];
     }
 
-    template<typename... Indices>
-    inline T operator()(Indices... indices) const {
-      return data_[get_offset<N>(strides_, indices...)];
+    inline NDArray &operator=(const T &val) {
+      std::fill(data_, data_ + size_, val);
+      return *this;
     }
+
+    void scale(const T &val) {
+      std::transform(data_, data_ + size_, data_, [val](T &c) { return c * val; });
+    }
+
+    inline NDArray &operator*=(const T &val) {
+      std::transform(data_, data_ + size_, data_, [val](T &c) { return c * val; });
+      return *this;
+    }
+
+    inline NDArray &operator/=(const T &val) {
+      std::transform(data_, data_ + size_, data_, [val](T &c) { return c / val; });
+      return *this;
+    }
+
 
     template<typename Indices>
     inline T &operator[](Indices i) {
@@ -189,7 +321,24 @@ namespace lsms {
 
     size_t shape(size_t i) const { return shape_[i]; }
 
+
+    NDArray(std::initializer_list<ArrayItem<T>> list) {
+
+      dim_from_initializer_list(list, 0);
+
+      ColumnMajor::calculate_strides<N>(shape_, strides_);
+
+      size_ = std::accumulate(std::begin(shape_), std::end(shape_), 1, std::multiplies<decltype(N)>());
+
+      data_ = allocator_.allocate(size_);
+
+      data_from_initializer_list(list, shape_, 0);
+
+    }
+
+
   };
+
 
 }
 
