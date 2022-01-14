@@ -3,8 +3,7 @@
 
 #include <cmath>
 
-#include "../src/common/Array3d.hpp"
-#include "../src/common/Matrix.hpp"
+#include "common.hpp"
 #include "gaunt_factor.hpp"
 #include "gaussq.h"
 
@@ -65,9 +64,9 @@ TEST(GauntFactorTest, Lmax3) {
   int lmax = 3;
   int kmax = (lmax + 1) * (lmax + 1);
 
-  Matrix<int> nj3(kmax, kmax);
-  Array3d<int> kj3(lmax + 1, kmax, kmax);
-  Array3d<double> cgnt(lmax + 1, kmax, kmax);
+  lsms::matrix<int> nj3(kmax, kmax);
+  lsms::array3d<int> kj3(lmax + 1, kmax, kmax);
+  lsms::array3d<double> cgnt(lmax + 1, kmax, kmax);
 
   gaunt_factor(&lmax, &cgnt[0], &kj3[0], &nj3[0]);
 
@@ -89,9 +88,9 @@ TEST(GauntFactorTest, Lmax3Full) {
   int lmax = 3;
   int kmax = (lmax + 1) * (lmax + 1);
 
-  Matrix<int> nj3(kmax, kmax);
-  Array3d<int> kj3(lmax + 1, kmax, kmax);
-  Array3d<double> cgnt(lmax + 1, kmax, kmax);
+  lsms::matrix<int> nj3(kmax, kmax);
+  lsms::array3d<int> kj3(lmax + 1, kmax, kmax);
+  lsms::array3d<double> cgnt(lmax + 1, kmax, kmax);
 
   gaunt_factor(&lmax, &cgnt[0], &kj3[0], &nj3[0]);
 

@@ -20,6 +20,8 @@ List of useful `C++` links
 
 - https://github.com/CLIUtils/CLI11
 
+- https://github.com/ned14/outcome
+
 Contribute
 ==========
 
