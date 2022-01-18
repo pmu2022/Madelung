@@ -4,6 +4,7 @@ project(src/Madelung)
 enable_language(CXX Fortran C)
 
 set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_C_STANDARD 11)
 
 #
 # Google tests

@@ -7,6 +7,17 @@
 #include <complex>
 
 #include "spherical_harmonics.hpp"
+#include "integer_factors.hpp"
+
+
+extern "C" {
+#include <complex.h>
+#include "gsl/gsl_sf.h"
+#include "gsl/gsl_complex.h"
+#include "gsl/gsl_complex_math.h"
+}
+
+#include "utils.hpp"
 
 /**
  * Test the CLM prefactor creation routines
@@ -70,7 +81,7 @@ TEST(SphericalHarmonicsTest, Clm3) {
 
   calc_clm(&lmax, clm_local);
 
-  std::vector<double> ref {
+  std::vector<double> ref{
       0.28209479177387831,
       0.48860251190292020,
       -0.34549414947133572,
@@ -181,6 +192,138 @@ TEST(SphericalHarmonics, SphHarmTest2) {
   EXPECT_NEAR(0.19947114020071652, std::imag(ylm[3]), 1.0e-10);
 
   delete[] ylm;
+
+}
+
+/**
+ * Compare the to analytic results
+ */
+TEST(SphericalHarmonics, SphHarmTest4) {
+
+  int lmax = 3;
+
+  std::vector<std::complex<double>> ylm((lmax + 1) * (lmax + 1));
+  std::vector<std::complex<double>> ylm_gsl((lmax + 1) * (lmax + 1));
+  std::vector<double> vec(3);
+
+  vec[0] = 1.0;
+  vec[1] = 1.0;
+  vec[2] = 1.0;
+
+  auto x = vec[0];
+  auto y = vec[1];
+  auto z = vec[2];
+
+  // 1. Calculate data
+  sph_harm_1(vec.data(), &lmax, ylm.data());
+
+
+  auto r = norm(std::begin(vec), std::end(vec));
+  auto theta = std::atan2(vec[1], vec[0]);
+  auto cos_phi = vec[2] / r; //
+
+  using namespace std::complex_literals;
+  using namespace lsms;
+
+
+  // reference
+  auto yref_l2mm1 = 0.5 * std::sqrt(15.0 / (M_PI * 2.0)) * (x - y * 1i) * z / (r * r);
+  auto yref_l2m1 = -0.5 * std::sqrt(15.0 / (M_PI * 2.0)) * (x + y * 1i) * z / (r * r);
+
+  EXPECT_NEAR(std::real(yref_l2mm1), std::real(ylm[5]), 1e-12);
+  EXPECT_NEAR(std::imag(yref_l2mm1), std::imag(ylm[5]), 1e-12);
+
+  EXPECT_NEAR(std::real(yref_l2m1), std::real(ylm[7]), 1e-12);
+  EXPECT_NEAR(std::imag(yref_l2m1), std::imag(ylm[7]), 1e-12);
+
+}
+
+
+
+
+/**
+ * Test spherical harmonics that are used for the calculation of the Madelung constant
+ * and reduced Green's function
+ *
+ * This is a comparison tests against the GSL implementation
+ */
+
+namespace lsms {
+
+  gsl_complex convert_complex(std::complex<double> &z) {
+    gsl_complex zr;
+    GSL_SET_COMPLEX(&zr, std::real(z), std::imag(z));
+    return zr;
+  }
+
+}
+
+TEST(SphericalHarmonics, SphHarmTest3) {
+
+  int lmax = 3;
+
+  std::vector<std::complex<double>> ylm((lmax + 1) * (lmax + 1));
+  std::vector<std::complex<double>> ylm_gsl((lmax + 1) * (lmax + 1));
+  std::vector<double> vec(3);
+
+  vec[0] = 1.0;
+  vec[1] = 1.0;
+  vec[2] = 1.0;
+
+  // 1. Calculate data
+  sph_harm_1(vec.data(), &lmax, ylm.data());
+
+
+  auto r = norm(std::begin(vec), std::end(vec));
+  auto theta = std::atan2(vec[1], vec[0]);
+  auto cos_phi = vec[2] / r; //
+
+  using namespace std::complex_literals;
+  using namespace lsms;
+
+  auto legendresize = gsl_sf_legendre_array_n(lmax);
+  std::vector<double> ylm_compare(legendresize);
+
+  auto legendre = gsl_sf_legendre_array_e(GSL_SF_LEGENDRE_SPHARM,
+                                          lmax,
+                                          cos_phi,
+                                          -1.0,
+                                          ylm_compare.data());
+
+  auto lofk = lsms::get_lofk(lmax);
+  auto mofk = lsms::get_mofk(lmax);
+
+  auto kmax = lsms::get_kmax(lmax);
+
+  for (auto k = 0; k < kmax; k++) {
+
+    auto m = mofk[k];
+    auto l = lofk[k];
+
+    auto m_abs = std::abs(m);
+
+    auto index = gsl_sf_legendre_array_index(l, m_abs);
+    std::complex<double> z = m * theta * 1i;
+    auto phase_factor = gsl_complex_exp(convert_complex(z));
+    gsl_complex zr;
+    GSL_SET_COMPLEX(&zr, std::real(ylm_compare[index]), 0.0);
+    auto res = gsl_complex_mul(phase_factor, zr);
+
+    ylm_gsl[k] = std::complex<double>(res.dat[0], res.dat[1]);
+
+  }
+
+
+  std::size_t i = 0;
+  for (auto l = 0; l <= lmax; l++) {
+    for (auto m = -l; m <= l; m++) {
+      std::cout << l << " " << m << std::endl;
+      std::cout << ylm_gsl[i] << std::endl;
+      std::cout << ylm[i] << std::endl;
+      i++;
+    }
+  }
+
 
 }
 

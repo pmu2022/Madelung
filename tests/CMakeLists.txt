@@ -11,12 +11,13 @@
 # Tests all routines in the Madelung library
 #
 
+find_package(GSL REQUIRED)
+
 # 1. Test associated legendre polynoms
 add_executable(legendre_test legendre_test.cpp)
 target_link_libraries(legendre_test PUBLIC multipole_madelung)
 target_link_libraries(legendre_test PUBLIC MultipoleMadelung)
 target_link_libraries(legendre_test PUBLIC gtest_main)
-find_package(GSL REQUIRED)
 target_link_libraries(legendre_test PUBLIC GSL::gsl)
 
 # 2. Test spherical harmonics
@@ -26,6 +27,7 @@ add_executable(spherical_harmonics_test
 target_link_libraries(spherical_harmonics_test PUBLIC multipole_madelung)
 target_link_libraries(spherical_harmonics_test PUBLIC MultipoleMadelung)
 target_link_libraries(spherical_harmonics_test PUBLIC gtest_main)
+target_link_libraries(spherical_harmonics_test PUBLIC GSL::gsl)
 
 # 3. Test Madelung potentials
 add_executable(
