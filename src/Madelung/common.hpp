@@ -15,10 +15,10 @@ constexpr auto Y0inv = 2.0 * 1.772453850905514;
 namespace lsms {
 
 template <typename T>
-using matrix = Matrix<T>; // NDArray<T,2>;
+using matrix = NDArray<T,2>;
 
 template <typename T>
-using array3d = Array3d<T>; // NDArray<T, 3>;
+using array3d = NDArray<T, 3>;
 
 }  // namespace lsms
 

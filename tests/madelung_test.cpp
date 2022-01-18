@@ -1,14 +1,7 @@
 /**
  *
- * This tests cover all calculation that are nesseary for obtaining:
- *
- *         Madelung Matrix -- returns M_{0,0}(1:Na,i)
- *
- *             DL matrix   -- returns alat^l * DL(1:Na,1:jmax,i)
- *
- *             DL Factor   -- returns the prefactor of DL matrix.
- *                            The Madelung matrix is a product of
- *                            this factor and DL matrix.
+ * This tests cover utily routines
+
  *
  */
 
@@ -16,18 +9,13 @@
 
 #define _USE_MATH_DEFINES
 
-#include <cassert>
-#include <cmath>
-#include <complex>
-#include <cstdlib>
-#include <iostream>
+
 #include <tuple>
 #include <vector>
 
-#include "MultipoleMadelung.hpp"
+#include "common.hpp"
 #include "lattice_utils.hpp"
 #include "madelung.hpp"
-#include "multipole_madelung.h"
 
 
 
@@ -37,7 +25,7 @@
 TEST(MadelungTests, ScalingFactor1) {
   int lmax = 3;
 
-  Matrix<double> bravais(3, 3);
+  lsms::matrix<double> bravais(3, 3);
   bravais = 0.0;
 
   bravais(0, 0) = 1.0;
@@ -52,7 +40,7 @@ TEST(MadelungTests, ScalingFactor1) {
  * Test the calculation of the generalized madelung matrix
  */
 TEST(MadelungTests, CreateLattice1) {
-  Matrix<double> vlat(3, 5);
+  lsms::matrix<double> vlat(3, 5);
   std::vector<double> vsq(5);
 
   std::vector<double> vn(3, 0.0);
@@ -73,7 +61,7 @@ TEST(MadelungTests, CreateLattice1) {
 }
 
 TEST(MadelungTests, CreateLattice2) {
-  Matrix<double> vlat(3, 6);
+  lsms::matrix<double> vlat(3, 6);
   std::vector<double> vsq(6);
 
   std::vector<double> vn(3, 0.0);

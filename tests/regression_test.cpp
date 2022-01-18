@@ -2,6 +2,14 @@
  *
  * Regression tests to ensure that the results are the same all the time
  *
+ *             Madelung Matrix -- returns M_{0,0}(1:Na,i)
+ *
+ *             DL matrix   -- returns alat^l * DL(1:Na,1:jmax,i)
+ *
+ *             DL Factor   -- returns the prefactor of DL matrix.
+ *                            The Madelung matrix is a product of
+ *                            this factor and DL matrix.
+ *
  */
 
 #include <gtest/gtest.h>
@@ -226,7 +234,7 @@ TEST(RegressionTestSuite, RegStructure1) {
   int gindex[] = {1, 2};
   int lmax_rho = 3;
   int lmax_pot = 3;
-  int iprint = 10;
+  int iprint = -10;
 
   double bravais[] = {
       1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0,
@@ -259,7 +267,7 @@ TEST(RegressionTestSuite, RegStructure2) {
   int gindex[] = {1, 3};
   int lmax_rho = 3;
   int lmax_pot = 3;
-  int iprint = 10;
+  int iprint = -10;
 
   double bravais[] = {
       1.1, 0.2, 0.5, -0.1, 1.1, 0.1, 0.0, 0.0, 1.6,
