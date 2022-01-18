@@ -9,12 +9,12 @@
 #include <iostream>
 #include <variant>
 
-#include "common/Matrix.hpp"
+#include "common.hpp"
 
 template <class T>
-static std::ostream &operator<<(std::ostream &os, Matrix<T> &v) {
-  for (auto i = 0; i < v.n_row(); i++) {
-    for (auto j = 0; j < v.n_col(); j++) {
+static std::ostream &operator<<(std::ostream &os, const lsms::matrix<T> &v) {
+  for (auto i = 0; i < v.shape()[0]; i++) {
+    for (auto j = 0; j < v.shape()[1]; j++) {
       os << v(i, j) << " ";
     }
     os << std::endl;

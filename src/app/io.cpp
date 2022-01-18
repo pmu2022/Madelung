@@ -4,7 +4,7 @@
 
 #include "io.hpp"
 
-#include "common/Matrix.hpp"
+#include "common.hpp"
 #include "yaml-cpp/yaml.h"
 
 lsms::MadelungConfig lsms::YAMLConfigFactory::createConfig() {
@@ -17,7 +17,7 @@ lsms::MadelungConfig lsms::YAMLConfigFactory::createConfig() {
   auto name = yaml["name"].as<std::string>();
 
   // Lattice
-  Matrix<double> lattice(3, 3);
+  lsms::matrix<double> lattice(3, 3);
   YAML::Node node = yaml["lattice"];
   for (std::size_t i = 0; i < node.size(); i++) {
     YAML::Node subnode = node[i];
@@ -30,7 +30,7 @@ lsms::MadelungConfig lsms::YAMLConfigFactory::createConfig() {
   YAML::Node atom_node = yaml["atomposition"];
 
   auto natoms = atom_node.size();
-  Matrix<double> atom_position(3, natoms);
+  lsms::matrix<double> atom_position(3, natoms);
 
   for (std::size_t i = 0; i < natoms; i++) {
     for (std::size_t j = 0; j < 3; j++) {

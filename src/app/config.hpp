@@ -10,15 +10,16 @@
 #include <string>
 #include <utility>
 
-#include "common/Matrix.hpp"
+#include "common.hpp"
 
 namespace lsms {
 
 class MadelungConfig {
  public:
-  MadelungConfig(const std::string &name, int lmax,
-                 const Matrix<double> &lattice,
-                 const Matrix<double> &atom_position)
+  MadelungConfig(const std::string &name,
+                 int lmax,
+                 const lsms::matrix<double> &lattice,
+                 const lsms::matrix<double> &atom_position)
       : name{name},
         lmax{lmax},
         lattice{lattice},
@@ -26,8 +27,8 @@ class MadelungConfig {
 
   std::string name;
   int lmax;
-  Matrix<double> lattice;
-  Matrix<double> atom_position;
+  matrix<double> lattice;
+  matrix<double> atom_position;
 };
 
 void print_config(MadelungConfig &config);

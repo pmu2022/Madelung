@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.19)
-project(src/Madelung)
+project(src/lib/Madelung)
 
 enable_language(CXX Fortran C)
 

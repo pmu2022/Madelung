@@ -4,13 +4,6 @@
 # Tests
 #
 
-
-
-
-#
-# Tests all routines in the Madelung library
-#
-
 find_package(GSL REQUIRED)
 
 # 1. Test associated legendre polynoms
