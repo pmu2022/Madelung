@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.19)
-project(src/lib/Madelung)
+project(src/lib/MultipoleMadelung)
 
 enable_language(CXX Fortran C)
 

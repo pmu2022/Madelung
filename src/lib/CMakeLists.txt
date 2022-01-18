@@ -2,4 +2,4 @@
 
 add_subdirectory(common)
 
-add_subdirectory(Madelung)
+add_subdirectory(MultipoleMadelung)
