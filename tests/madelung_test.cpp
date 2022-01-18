@@ -12,32 +12,27 @@
  *
  */
 
-
 #include <gtest/gtest.h>
 
 #define _USE_MATH_DEFINES
 
-#include <cmath>
 #include <cassert>
+#include <cmath>
 #include <complex>
 #include <cstdlib>
 #include <iostream>
-#include <complex>
-#include <cmath>
-#include <vector>
 #include <tuple>
-
-#include "multipole_madelung.h"
+#include <vector>
 
 #include "MultipoleMadelung.hpp"
 #include "lattice_utils.hpp"
 #include "madelung.hpp"
+#include "multipole_madelung.h"
 
 /**
  * Tests for the development of the Madelung potential
  */
 TEST(MadelungTests, BasicLegacy) {
-
   int num_local_atoms = 2;
   int num_atoms = 2;
   int gindex[] = {1, 2};
@@ -46,35 +41,22 @@ TEST(MadelungTests, BasicLegacy) {
   int iprint = 3;
 
   double bravais[] = {
-      1.0, 0.0, 0.0,
-      0.0, 1.0, 0.0,
-      0.0, 0.0, 1.0,
+      1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0,
   };
 
-  double position[] = {
-      0.0, 0.0, 0.0,
-      0.5, 0.5, 0.5
-  };
+  double position[] = {0.0, 0.0, 0.0, 0.5, 0.5, 0.5};
 
-  initMadelung(num_local_atoms,
-               num_atoms,
-               gindex,
-               lmax_rho,
-               lmax_pot,
-               bravais,
-               position,
-               10);
+  initMadelung(num_local_atoms, num_atoms, gindex, lmax_rho, lmax_pot, bravais,
+               position, 10);
 
   printMadelungMatrix(&iprint);
   endMadelung();
-
 }
 
 /**
  * Tests for the development of the Madelung potential
  */
 TEST(MadelungTests, BasicLegacy2) {
-
   int num_local_atoms = 2;
   int num_atoms = 2;
   int gindex[] = {1, 2};
@@ -83,36 +65,22 @@ TEST(MadelungTests, BasicLegacy2) {
   int iprint = 3;
 
   double bravais[] = {
-      1.1, 0.2, 0.5,
-      -0.1, 1.1, 0.1,
-      0.0, 0.0, 1.6,
+      1.1, 0.2, 0.5, -0.1, 1.1, 0.1, 0.0, 0.0, 1.6,
   };
 
-  double position[] = {
-      0.0, 0.0, 0.1,
-      0.4, 0.4, 0.6
-  };
+  double position[] = {0.0, 0.0, 0.1, 0.4, 0.4, 0.6};
 
-  initMadelung(num_local_atoms,
-               num_atoms,
-               gindex,
-               lmax_rho,
-               lmax_pot,
-               bravais,
-               position,
-               10);
+  initMadelung(num_local_atoms, num_atoms, gindex, lmax_rho, lmax_pot, bravais,
+               position, 10);
 
   printMadelungMatrix(&iprint);
   endMadelung();
-
 }
-
 
 /**
  * Check real space truncuation sphere
  */
 TEST(MadelungTests, RealSpaceTrunc1) {
-
   int lmax = 3;
   Matrix<double> bravais(3, 3);
   bravais = 0.0;
@@ -128,14 +96,12 @@ TEST(MadelungTests, RealSpaceTrunc1) {
   real_space_trunc(bravais, lmax, eta, rscut, nm);
 
   EXPECT_NEAR(rscut, 12.409243328345438, 1e-6);
-
 }
 
 /**
  * Check number of lattice vectors
  */
 TEST(MadelungTests, NumberOfLatticeVectors) {
-
   Matrix<double> bravais(3, 3);
   bravais = 0.0;
 
@@ -149,15 +115,12 @@ TEST(MadelungTests, NumberOfLatticeVectors) {
 
   auto nrslat_diff = num_latt_vectors(bravais, rscut, nm);
   EXPECT_EQ(nrslat_diff, 3145);
-
 }
-
 
 /**
  * Test the scaling factors
  */
 TEST(MadelungTests, ScalingFactor1) {
-
   int lmax = 3;
 
   Matrix<double> bravais(3, 3);
@@ -169,15 +132,12 @@ TEST(MadelungTests, ScalingFactor1) {
 
   auto scaling_factor = lsms::scaling_factor(bravais, lmax);
   EXPECT_NEAR(scaling_factor, 0.81915494309189596, 1e-6);
-
 }
 
 /**
  * Test the calculation of the generalized madelung matrix
  */
 TEST(MadelungTests, CreateLattice1) {
-
-
   Matrix<double> vlat(3, 5);
   std::vector<double> vsq(5);
 
@@ -190,23 +150,15 @@ TEST(MadelungTests, CreateLattice1) {
   auto vnsq = 4.0;
   auto nv = 3;
 
-
-  lsms::insert_ordered(vlat,
-                       vsq,
-                       nv,
-                       vn,
-                       vnsq);
+  lsms::insert_ordered(vlat, vsq, nv, vn, vnsq);
 
   EXPECT_EQ(vsq[0], 1.0);
   EXPECT_EQ(vsq[1], 2.0);
   EXPECT_EQ(vsq[2], 3.0);
   EXPECT_EQ(vsq[3], 4.0);
-
 }
 
 TEST(MadelungTests, CreateLattice2) {
-
-
   Matrix<double> vlat(3, 6);
   std::vector<double> vsq(6);
 
@@ -221,12 +173,7 @@ TEST(MadelungTests, CreateLattice2) {
   auto vnsq = 4.0;
   auto nv = 5;
 
-
-  lsms::insert_ordered(vlat,
-                       vsq,
-                       nv,
-                       vn,
-                       vnsq);
+  lsms::insert_ordered(vlat, vsq, nv, vn, vnsq);
 
   EXPECT_EQ(vsq[0], 1.0);
   EXPECT_EQ(vsq[1], 2.0);
@@ -234,14 +181,12 @@ TEST(MadelungTests, CreateLattice2) {
   EXPECT_EQ(vsq[3], 4.0);
   EXPECT_EQ(vsq[4], 5.0);
   EXPECT_EQ(vsq[5], 6.0);
-
 }
 
 /**
  *
  */
 TEST(MadelungTests, RealSpaceAndReciprocalSpace) {
-
   int lmax = 3;
   auto eta = 0.6;
 
@@ -255,13 +200,11 @@ TEST(MadelungTests, RealSpaceAndReciprocalSpace) {
   auto scaling_factor = lsms::scaling_factor(bravais, lmax);
   EXPECT_NEAR(scaling_factor, 0.81915494309189596, 1e-6);
 
-
   auto r_brav = bravais;
   auto k_brav = bravais;
   r_brav.scale(1.0 / scaling_factor);
 
   reciprocal_lattice(r_brav, k_brav, scaling_factor);
-
 
   std::vector<int> nm(3);
   double rscut = 0.0;
@@ -276,7 +219,6 @@ TEST(MadelungTests, RealSpaceAndReciprocalSpace) {
   EXPECT_EQ(nrslat, 729);
   EXPECT_EQ(nknlat, 729);
 
-
   // Create lattice vectors for real space grid
   auto rslats = lsms::create_lattice(r_brav, rscut, nm, nrslat);
 
@@ -286,8 +228,6 @@ TEST(MadelungTests, RealSpaceAndReciprocalSpace) {
 
   // Create lattice vectors for reciprocal space grid
   auto knlats = lsms::create_lattice(k_brav, kncut, nm, nknlat);
-
-
 }
 
 /**
@@ -295,9 +235,8 @@ TEST(MadelungTests, RealSpaceAndReciprocalSpace) {
  *
  * This test is for a conventional body-centered cell
  *
-*/
+ */
 TEST(MadelungTests, MadelungSummations1) {
-
   // Global and local is the same
   int num_atoms = 2;
   int lmax = 3;
@@ -327,7 +266,8 @@ TEST(MadelungTests, MadelungSummations1) {
   reciprocal_lattice(r_brav, k_brav, scaling_factor);
 
   auto omegbra = lsms::omega(r_brav);
-  auto alat = scaling_factor * std::cbrt(3.0 * omegbra / (4.0 * M_PI * num_atoms));
+  auto alat =
+      scaling_factor * std::cbrt(3.0 * omegbra / (4.0 * M_PI * num_atoms));
 
   // 2. Calculate truncation spheres
   std::vector<int> nm(3);
@@ -347,12 +287,12 @@ TEST(MadelungTests, MadelungSummations1) {
   Matrix<double> knlat;
   std::vector<double> knlatsq;
 
-
-  std::tie(rslat, rslatsq) = lsms::create_lattice_and_sq(r_brav, rscut, nm, nrslat);
-  std::tie(knlat, knlatsq) = lsms::create_lattice_and_sq(k_brav, kncut, nm, nknlat);
+  std::tie(rslat, rslatsq) =
+      lsms::create_lattice_and_sq(r_brav, rscut, nm, nrslat);
+  std::tie(knlat, knlatsq) =
+      lsms::create_lattice_and_sq(k_brav, kncut, nm, nknlat);
 
   auto omega = lsms::omega(r_brav);
-
 
   // 4. Calculate the madelung matrix
   Matrix<double> madsum(num_atoms, num_atoms);
@@ -361,29 +301,12 @@ TEST(MadelungTests, MadelungSummations1) {
   Array3d<std::complex<double>> DL_matrix(num_atoms, kmax, num_atoms);
 
   for (auto i = 0; i < num_atoms; i++) {
-
-    lsms::calculate_madelung(
-        madsum,
-        DL_matrix,
-        atom_position,
-        num_atoms,
-        num_atoms,
-        i, // id
-        i, // myid
-        jmax,
-        kmax,
-        lmax,
-        omega,
-        eta,
-        scaling_factor,
-        alat,
-        nrslat,
-        rslat,
-        rslatsq,
-        nknlat,
-        knlat,
-        knlatsq);
-
+    lsms::calculate_madelung(madsum, DL_matrix, atom_position, num_atoms,
+                             num_atoms,
+                             i,  // id
+                             i,  // myid
+                             jmax, kmax, lmax, omega, eta, scaling_factor, alat,
+                             nrslat, rslat, rslatsq, nknlat, knlat, knlatsq);
   }
 
   EXPECT_NEAR(madsum(0, 0), -0.2837297479481e1, 1e-12);
@@ -400,7 +323,6 @@ TEST(MadelungTests, MadelungSummations1) {
   EXPECT_NEAR(std::imag(DL_matrix(1, 0, 0)), 0.0, 1e-12);
   EXPECT_NEAR(std::imag(DL_matrix(1, 0, 1)), 0.0, 1e-12);
   EXPECT_NEAR(std::imag(DL_matrix(0, 0, 1)), 0.0, 1e-12);
-
 }
 
 /**
@@ -408,9 +330,8 @@ TEST(MadelungTests, MadelungSummations1) {
  *
  * This test is for a conventional body-centered cell
  *
-*/
+ */
 TEST(MadelungTests, MadelungSummations2) {
-
   // Global and local is the same
   int num_atoms = 2;
   int lmax = 3;
@@ -463,9 +384,9 @@ TEST(MadelungTests, MadelungSummations2) {
   EXPECT_NEAR(k_brav(1, 1), 5.2623592947212741, 1e-12);
   EXPECT_NEAR(k_brav(2, 2), 3.6776715525608914, 1e-12);
 
-
   auto omegbra = lsms::omega(r_brav);
-  auto alat = scaling_factor * std::cbrt(3.0 * omegbra / (4.0 * M_PI * num_atoms));
+  auto alat =
+      scaling_factor * std::cbrt(3.0 * omegbra / (4.0 * M_PI * num_atoms));
 
   // 2. Calculate truncation spheres
   std::vector<int> r_nm(3);
@@ -498,8 +419,10 @@ TEST(MadelungTests, MadelungSummations2) {
   EXPECT_EQ(567, nrslat);
   EXPECT_EQ(891, nknlat);
 
-  std::tie(rslat, rslatsq) = lsms::create_lattice_and_sq(r_brav, rscut, r_nm, nrslat);
-  std::tie(knlat, knlatsq) = lsms::create_lattice_and_sq(k_brav, kncut, k_nm, nknlat);
+  std::tie(rslat, rslatsq) =
+      lsms::create_lattice_and_sq(r_brav, rscut, r_nm, nrslat);
+  std::tie(knlat, knlatsq) =
+      lsms::create_lattice_and_sq(k_brav, kncut, k_nm, nknlat);
 
   auto omega = lsms::omega(r_brav);
 
@@ -510,34 +433,16 @@ TEST(MadelungTests, MadelungSummations2) {
   Array3d<std::complex<double>> DL_matrix(num_atoms, kmax, num_atoms);
 
   for (auto i = 0; i < num_atoms; i++) {
-
-    lsms::calculate_madelung(
-        madsum,
-        DL_matrix,
-        atom_position,
-        num_atoms,
-        num_atoms,
-        i, // id
-        i, // myid
-        jmax,
-        kmax,
-        lmax,
-        omega,
-        eta,
-        scaling_factor,
-        alat,
-        nrslat,
-        rslat,
-        rslatsq,
-        nknlat,
-        knlat,
-        knlatsq);
-
+    lsms::calculate_madelung(madsum, DL_matrix, atom_position, num_atoms,
+                             num_atoms,
+                             i,  // id
+                             i,  // myid
+                             jmax, kmax, lmax, omega, eta, scaling_factor, alat,
+                             nrslat, rslat, rslatsq, nknlat, knlat, knlatsq);
   }
 
   // 6. Dl factors
   auto dl_factor = lsms::calculate_dl_factor(kmax, jmax, lmax);
-
 
   EXPECT_NEAR(madsum(0, 0), -2.2231877288887785, 1e-12);
   EXPECT_NEAR(madsum(1, 0), -0.30394933422241815, 1e-12);
@@ -595,5 +500,4 @@ TEST(MadelungTests, MadelungSummations2) {
   EXPECT_NEAR(2.4278854013157353E-002, dl_factor(1, 1), 1e-12);
   EXPECT_NEAR(2.8034805800224084E-002, dl_factor(2, 1), 1e-12);
   EXPECT_NEAR(2.4278854013157353E-002, dl_factor(3, 1), 1e-12);
-
 }

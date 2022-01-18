@@ -232,6 +232,7 @@ std::vector<int> lsms::reciprocal_space_multiplication(
 }
 
 void lsms::calculate_madelung_matrix(
+    int num_atoms,
     int myatom, int id,
     int lmax_mad, double eta, double a0,
     lsms::matrix<double> &r_brav, lsms::matrix<double> &atom_position,
@@ -240,7 +241,6 @@ void lsms::calculate_madelung_matrix(
     lsms::matrix<double> &madmat,
     lsms::array3d<std::complex<double>> &dl_matrix) {
 
-  int num_atoms = atom_position[1];
   int nrslat = rslatsq.size();
   int nknlat = knlatsq.size();
 

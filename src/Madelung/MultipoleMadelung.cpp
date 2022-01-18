@@ -16,11 +16,11 @@
 lsms::MultipoleMadelung::MultipoleMadelung(
     matrix<double> lattice,
     matrix<double> atom_position,
+    int num_atoms,
     int lmax,
     std::vector<int> global_position_index)
-    : lmax{lmax} {
+    : lmax{lmax}, num_atoms{num_atoms} {
 
-  num_atoms = atom_position[1];  // NOLINT(cppcoreguidelines-narrowing-conversions)
   local_num_atoms = global_position_index.size();  // NOLINT(cppcoreguidelines-narrowing-conversions)
 
   int kmax = (lmax + 1) * (lmax + 1);
@@ -68,7 +68,7 @@ lsms::MultipoleMadelung::MultipoleMadelung(
   dl_matrix = array3d<std::complex<double>>(num_atoms, kmax, local_num_atoms);
 
   for (auto i{0}; i < global_position_index.size(); i++) {
-    lsms::calculate_madelung_matrix(
+    lsms::calculate_madelung_matrix(num_atoms,
         global_position_index[i], i, lmax, eta, scaling_factor, r_brav,
         atom_position, rslat, rslatsq, knlat, knlatsq, madsum, dl_matrix);
   }

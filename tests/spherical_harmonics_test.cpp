@@ -1,3 +1,9 @@
+/**
+ *
+ * Tests for the spherical harmonics and the prefactors
+ *
+ */
+
 
 #include <gtest/gtest.h>
 
@@ -6,24 +12,14 @@
 #include <cmath>
 #include <complex>
 
-#include "spherical_harmonics.hpp"
 #include "integer_factors.hpp"
-
-
-extern "C" {
-#include <complex.h>
-#include "gsl/gsl_sf.h"
-#include "gsl/gsl_complex.h"
-#include "gsl/gsl_complex_math.h"
-}
-
+#include "spherical_harmonics.hpp"
 #include "utils.hpp"
 
 /**
  * Test the CLM prefactor creation routines
  */
 TEST(SphericalHarmonicsTest, Clm1) {
-
   int lmax = 3;
 
   auto *clm_local = new double[(lmax + 1) * (lmax + 2) / 2];
@@ -45,14 +41,13 @@ TEST(SphericalHarmonicsTest, Clm1) {
  * Test the CLM prefactor creation routines
  */
 TEST(SphericalHarmonicsTest, Clm2) {
-
   /*
    *   0.28209479177387831
-  0.48860251190292020
- -0.34549414947133572
-  0.63078313050504031
- -0.25751613468212653
-  0.12875806734106326
+   *   0.48860251190292020
+   *  -0.34549414947133572
+   *   0.63078313050504031
+   *  -0.25751613468212653
+   *   0.12875806734106326
    */
 
   int lmax = 6;
@@ -74,59 +69,37 @@ TEST(SphericalHarmonicsTest, Clm2) {
  *
  */
 TEST(SphericalHarmonicsTest, Clm3) {
-
-
   int lmax = 6;
   auto *clm_local = new double[(lmax + 1) * (lmax + 2) / 2];
 
   calc_clm(&lmax, clm_local);
 
-  std::vector<double> ref{
-      0.28209479177387831,
-      0.48860251190292020,
-      -0.34549414947133572,
-      0.63078313050504031,
-      -0.25751613468212653,
-      0.12875806734106326,
-      0.74635266518023113,
-      -0.21545345607610053,
-      6.8132365095552191E-002,
-      -2.7814921575518955E-002,
-      0.84628437532163492,
-      -0.18923493915151210,
-      4.4603102903819303E-002,
-      -1.1920680675222410E-002,
-      4.2145970709045986E-003,
-      0.93560257962738924,
-      -0.17081687924064815,
-      3.2281355871636191E-002,
-      -6.5894041742255317E-003,
-      1.5531374585246052E-003,
-      -4.9114518882630519E-004,
-      1.0171072362820552,
-      -0.15694305382900609,
-      2.4814875652103469E-002,
-      -4.1358126086839114E-003,
-      7.5509261979682157E-004,
-      -1.6098628745551694E-004,
-      4.6472738199140594E-005
-  };
+  std::vector<double> ref{0.28209479177387831,      0.48860251190292020,
+                          -0.34549414947133572,     0.63078313050504031,
+                          -0.25751613468212653,     0.12875806734106326,
+                          0.74635266518023113,      -0.21545345607610053,
+                          6.8132365095552191E-002,  -2.7814921575518955E-002,
+                          0.84628437532163492,      -0.18923493915151210,
+                          4.4603102903819303E-002,  -1.1920680675222410E-002,
+                          4.2145970709045986E-003,  0.93560257962738924,
+                          -0.17081687924064815,     3.2281355871636191E-002,
+                          -6.5894041742255317E-003, 1.5531374585246052E-003,
+                          -4.9114518882630519E-004, 1.0171072362820552,
+                          -0.15694305382900609,     2.4814875652103469E-002,
+                          -4.1358126086839114E-003, 7.5509261979682157E-004,
+                          -1.6098628745551694E-004, 4.6472738199140594E-005};
 
   for (int i = 0; i < ref.size(); i++) {
     EXPECT_NEAR(ref[i], clm_local[i], 1.0e-12);
   }
 
-
   delete[] clm_local;
 }
-
-
 
 /**
  * Test the spherical harmonics `sph_harm_0` and `sph_harm_1`
  */
 TEST(SphericalHarmonics, SphHarmTest1) {
-
   int lmax = 3;
 
   auto *ylm = new std::complex<double>[(lmax + 1) * (lmax + 1)];
@@ -152,17 +125,14 @@ TEST(SphericalHarmonics, SphHarmTest1) {
   EXPECT_NEAR(real_ref00, std::real(ylm[0]), 1.0e-12);
   EXPECT_NEAR(imag_ref00, std::imag(ylm[0]), 1.0e-12);
 
-
   delete[] ylm;
-
 }
 
 /**
- * Test spherical harmonics that are used for the calculation of the Madelung constant
- * and reduced Green's function
+ * Test spherical harmonics that are used for the calculation of the Madelung
+ * constant and reduced Green's function
  */
 TEST(SphericalHarmonics, SphHarmTest2) {
-
   int lmax = 3;
 
   auto *ylm = new std::complex<double>[(lmax + 1) * (lmax + 1)];
@@ -192,15 +162,13 @@ TEST(SphericalHarmonics, SphHarmTest2) {
   EXPECT_NEAR(0.19947114020071652, std::imag(ylm[3]), 1.0e-10);
 
   delete[] ylm;
-
 }
 
 /**
  * Compare the to analytic results
  */
 TEST(SphericalHarmonics, SphHarmTest4) {
-
-  int lmax = 3;
+  int lmax = 30;
 
   std::vector<std::complex<double>> ylm((lmax + 1) * (lmax + 1));
   std::vector<std::complex<double>> ylm_gsl((lmax + 1) * (lmax + 1));
@@ -214,116 +182,88 @@ TEST(SphericalHarmonics, SphHarmTest4) {
   auto y = vec[1];
   auto z = vec[2];
 
-  // 1. Calculate data
-  sph_harm_1(vec.data(), &lmax, ylm.data());
-
-
   auto r = norm(std::begin(vec), std::end(vec));
   auto theta = std::atan2(vec[1], vec[0]);
-  auto cos_phi = vec[2] / r; //
+  auto phi = std::acos(vec[2] / r);  //
+
+  sph_harm_1(vec.data(), &lmax, ylm.data());
 
   using namespace std::complex_literals;
   using namespace lsms;
-
-
-  // reference
-  auto yref_l2mm1 = 0.5 * std::sqrt(15.0 / (M_PI * 2.0)) * (x - y * 1i) * z / (r * r);
-  auto yref_l2m1 = -0.5 * std::sqrt(15.0 / (M_PI * 2.0)) * (x + y * 1i) * z / (r * r);
-
-  EXPECT_NEAR(std::real(yref_l2mm1), std::real(ylm[5]), 1e-12);
-  EXPECT_NEAR(std::imag(yref_l2mm1), std::imag(ylm[5]), 1e-12);
-
-  EXPECT_NEAR(std::real(yref_l2m1), std::real(ylm[7]), 1e-12);
-  EXPECT_NEAR(std::imag(yref_l2m1), std::imag(ylm[7]), 1e-12);
-
-}
-
-
-
-
-/**
- * Test spherical harmonics that are used for the calculation of the Madelung constant
- * and reduced Green's function
- *
- * This is a comparison tests against the GSL implementation
- */
-
-namespace lsms {
-
-  gsl_complex convert_complex(std::complex<double> &z) {
-    gsl_complex zr;
-    GSL_SET_COMPLEX(&zr, std::real(z), std::imag(z));
-    return zr;
-  }
-
-}
-
-TEST(SphericalHarmonics, SphHarmTest3) {
-
-  int lmax = 3;
-
-  std::vector<std::complex<double>> ylm((lmax + 1) * (lmax + 1));
-  std::vector<std::complex<double>> ylm_gsl((lmax + 1) * (lmax + 1));
-  std::vector<double> vec(3);
-
-  vec[0] = 1.0;
-  vec[1] = 1.0;
-  vec[2] = 1.0;
-
-  // 1. Calculate data
-  sph_harm_1(vec.data(), &lmax, ylm.data());
-
-
-  auto r = norm(std::begin(vec), std::end(vec));
-  auto theta = std::atan2(vec[1], vec[0]);
-  auto cos_phi = vec[2] / r; //
-
-  using namespace std::complex_literals;
-  using namespace lsms;
-
-  auto legendresize = gsl_sf_legendre_array_n(lmax);
-  std::vector<double> ylm_compare(legendresize);
-
-  auto legendre = gsl_sf_legendre_array_e(GSL_SF_LEGENDRE_SPHARM,
-                                          lmax,
-                                          cos_phi,
-                                          -1.0,
-                                          ylm_compare.data());
 
   auto lofk = lsms::get_lofk(lmax);
   auto mofk = lsms::get_mofk(lmax);
 
   auto kmax = lsms::get_kmax(lmax);
 
-  for (auto k = 0; k < kmax; k++) {
-
-    auto m = mofk[k];
-    auto l = lofk[k];
-
-    auto m_abs = std::abs(m);
-
-    auto index = gsl_sf_legendre_array_index(l, m_abs);
-    std::complex<double> z = m * theta * 1i;
-    auto phase_factor = gsl_complex_exp(convert_complex(z));
-    gsl_complex zr;
-    GSL_SET_COMPLEX(&zr, std::real(ylm_compare[index]), 0.0);
-    auto res = gsl_complex_mul(phase_factor, zr);
-
-    ylm_gsl[k] = std::complex<double>(res.dat[0], res.dat[1]);
-
-  }
-
+  const std::vector<std::complex<double>> compare_res_l30{
+      -4.34262048809611e-18 + 0.0016114564738045761i,
+      -0.006241144086183253 + 0.006241144086183253i,
+      -0.03217445746136457 - 2.7581642441053956e-17i,
+      -0.06315628610585003 - 0.06315628610585024i,
+      -1.9386605149095688e-16 - 0.197754615196241i,
+      0.25027973459899605 - 0.25027973459899605i,
+      0.5067141193910657 + 3.72327494637023e-16i,
+      0.3916518217721521 + 0.39165182177215335i,
+      -9.713785172606613e-16 + 0.3964951752214758i,
+      -0.0304294314775328 + 0.030429431477532815i,
+      0.32322578670044794 + 1.9791871254229436e-16i,
+      0.304949898509267 + 0.30494989850926796i,
+      -9.108325125330795e-17 + 0.16527804192055603i,
+      0.17692709022075687 - 0.176927090220757i,
+      0.39546073364747425 + 1.9371988865993734e-16i,
+      0.06810319540693736 + 0.06810319540693754i,
+      1.3329964287978602e-16 - 0.31099262479503575i,
+      0.22601061085123725 - 0.2260106108512375i,
+      -0.09450624134527816 - 3.472102978888264e-17i,
+      -0.2627318257447544 - 0.26273182574475507i,
+      3.325528324220362e-17 - 0.10861999807734685i,
+      -0.2221077634394482 + 0.2221077634394481i,
+      -0.24396200057995396 - 5.975345662476507e-17i,
+      0.1540482476931519 + 0.15404824769315198i,
+      -5.775517454110126e-17 + 0.31440452643876676i,
+      0.09013690777911247 - 0.09013690777911244i,
+      0.34255235088485253 + 4.1950564005153565e-17i,
+      -0.04451964580493865 - 0.044519645804938654i,
+      2.1445150726182942e-17 - 0.3502258894746451i,
+      -0.021430138556263315 + 0.02143013855626331i,
+      -0.35125454366556247 + 0i,
+      0.02143013855626331 + 0.021430138556263308i,
+      2.1445150726182942e-17 + 0.3502258894746451i,
+      0.04451964580493865 - 0.044519645804938654i,
+      0.3425523508848526 - 4.195056400515357e-17i,
+      -0.09013690777911247 - 0.09013690777911244i,
+      -5.775517454110126e-17 - 0.31440452643876676i,
+      -0.1540482476931519 + 0.15404824769315198i,
+      -0.24396200057995399 + 5.975345662476508e-17i,
+      0.22210776343944827 + 0.22210776343944816i,
+      3.325528324220362e-17 + 0.10861999807734683i,
+      0.2627318257447544 - 0.26273182574475507i,
+      -0.09450624134527814 + 3.4721029788882634e-17i,
+      -0.2260106108512373 - 0.22601061085123755i,
+      1.33299642879786e-16 + 0.3109926247950357i,
+      -0.06810319540693738 + 0.06810319540693756i,
+      0.39546073364747425 - 1.9371988865993734e-16i,
+      -0.17692709022075684 - 0.17692709022075698i,
+      -9.1083251253308e-17 - 0.16527804192055612i,
+      -0.30494989850926696 + 0.30494989850926785i,
+      0.3232257867004479 - 1.9791871254229431e-16i,
+      0.03042943147753279 + 0.030429431477532805i,
+      -9.713785172606613e-16 - 0.3964951752214758i,
+      -0.39165182177215224 + 0.3916518217721535i,
+      0.5067141193910659 - 3.723274946370232e-16i,
+      -0.2502797345989962 - 0.2502797345989963i,
+      -1.9386605149095688e-16 + 0.197754615196241i,
+      0.06315628610585003 - 0.06315628610585024i,
+      -0.032174457461364575 + 2.7581642441053962e-17i,
+      0.006241144086183255 + 0.006241144086183255i,
+      -4.34262048809611e-18 - 0.0016114564738045761i,
+  };
 
   std::size_t i = 0;
-  for (auto l = 0; l <= lmax; l++) {
-    for (auto m = -l; m <= l; m++) {
-      std::cout << l << " " << m << std::endl;
-      std::cout << ylm_gsl[i] << std::endl;
-      std::cout << ylm[i] << std::endl;
-      i++;
-    }
+  for (auto k = 900; k < kmax; k++) {
+    EXPECT_NEAR(std::real(compare_res_l30[i]), std::real(ylm[k]), 1e-14);
+    EXPECT_NEAR(std::imag(compare_res_l30[i]), std::imag(ylm[k]), 1e-14);
+    i++;
   }
-
-
 }
-

@@ -39,8 +39,11 @@ class MultipoleMadelung {
   /// Angular-momentum index cutoff l
   int lmax;
 
-  MultipoleMadelung(matrix<double> lattice, matrix<double> atom_position,
-                    int lmax, std::vector<int> global_position_index);
+  MultipoleMadelung(matrix<double> lattice,
+                    matrix<double> atom_position,
+                    int num_atoms,
+                    int lmax,
+                    std::vector<int> global_position_index);
 
   double getMadSum(int i, int j) const;
 

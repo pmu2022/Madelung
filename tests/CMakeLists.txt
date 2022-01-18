@@ -29,14 +29,6 @@ target_link_libraries(spherical_harmonics_test PUBLIC MultipoleMadelung)
 target_link_libraries(spherical_harmonics_test PUBLIC gtest_main)
 target_link_libraries(spherical_harmonics_test PUBLIC GSL::gsl)
 
-# 3. Test Madelung potentials
-add_executable(
-        madelung_test madelung_test.cpp
-)
-target_link_libraries(madelung_test PUBLIC multipole_madelung)
-target_link_libraries(madelung_test PUBLIC MultipoleMadelung)
-target_link_libraries(madelung_test PUBLIC gtest_main)
-
 # 4. Test Gaunt coeffiencts
 add_executable(gaunt_factor_test
         gaunt_factor_test.cpp
@@ -66,4 +58,5 @@ include(GoogleTest)
 gtest_discover_tests(legendre_test)
 gtest_discover_tests(spherical_harmonics_test)
 gtest_discover_tests(gaunt_factor_test)
-gtest_discover_tests(madelung_test)
+gtest_discover_tests(regression_test)
+gtest_discover_tests(multi_array_test)

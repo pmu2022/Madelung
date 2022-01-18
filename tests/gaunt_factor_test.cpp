@@ -1,17 +1,21 @@
+/**
+ *
+ * Tests for the Gaunt coefficents
+ *
+ */
 
 #include <gtest/gtest.h>
 
 #include <cmath>
 
 #include "common.hpp"
-#include "gaunt_factor.hpp"
 #include "gaussq.h"
+#include "gaunt_factor.hpp"
 
 /**
  * Test the Gauss Quadratur
  */
 TEST(GaussqTest, GaussLegendreQuadrature) {
-
   int kind = 1;
   int n = 2;
   int kpts = 0;
@@ -28,16 +32,12 @@ TEST(GaussqTest, GaussLegendreQuadrature) {
 
   EXPECT_NEAR(1.0, w[0], 1.0e-12);
   EXPECT_NEAR(1.0, w[1], 1.0e-12);
-
 }
-
 
 /**
  * Test the Gaunt factors
  */
 TEST(GauntFactorTest, Lmax3) {
-
-
   /*
    * Reference results:
    *
@@ -76,15 +76,12 @@ TEST(GauntFactorTest, Lmax3) {
   EXPECT_NEAR(-0.12615662610100786, cgnt(0, 1, 1), 1e-12);
   EXPECT_NEAR(0.28209479177387842, cgnt(1, 1, 1), 1e-12);
   EXPECT_NEAR(0.0000000000000000, cgnt(2, 2, 2), 1e-12);
-
 }
-
 
 /**
  * Test the Gaunt factors
  */
 TEST(GauntFactorTest, Lmax3Full) {
-
   int lmax = 3;
   int kmax = (lmax + 1) * (lmax + 1);
 
@@ -94,13 +91,7 @@ TEST(GauntFactorTest, Lmax3Full) {
 
   gaunt_factor(&lmax, &cgnt[0], &kj3[0], &nj3[0]);
 
-  for(int i = 0; i < kmax; i++) {
-    EXPECT_NEAR(cgnt(0,0,i),  0.28209479177387842, 1e-12);
+  for (int i = 0; i < kmax; i++) {
+    EXPECT_NEAR(cgnt(0, 0, i), 0.28209479177387842, 1e-12);
   }
-
 }
-
-
-
-
-

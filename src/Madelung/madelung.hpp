@@ -52,6 +52,7 @@ std::vector<int> reciprocal_space_multiplication(const matrix<double> &brav,
  *
  */
 void calculate_madelung_matrix(
+    int num_atoms,
     int myatom, int id,
 
     int lmax_mad, double eta, double a0,
