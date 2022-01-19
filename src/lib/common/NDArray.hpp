@@ -8,6 +8,9 @@
 #define MULTIARRAY_HPP
 
 #include <cstddef>
+#include <stdexcept>
+#include <vector>
+#include <memory>
 #include <type_traits>
 #include <algorithm>
 #include <numeric>

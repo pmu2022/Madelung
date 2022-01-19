@@ -12,6 +12,7 @@
 
 #include "lattice_utils.hpp"
 #include "madelung.hpp"
+#include "integer_factors.hpp"
 
 lsms::MultipoleMadelung::MultipoleMadelung(
     matrix<double> lattice,
@@ -23,7 +24,8 @@ lsms::MultipoleMadelung::MultipoleMadelung(
 
   local_num_atoms = global_position_index.size();  // NOLINT(cppcoreguidelines-narrowing-conversions)
 
-  int kmax = (lmax + 1) * (lmax + 1);
+  int kmax = get_kmax(lmax);
+  int jmax = get_jmax(lmax);
 
   auto r_brav = lattice;
   auto k_brav = lattice;
@@ -65,16 +67,22 @@ lsms::MultipoleMadelung::MultipoleMadelung(
 
   // 4. Calculate the Madelung matrix and the prefactor matrix
   madsum = matrix<double>(num_atoms, local_num_atoms);
-  dl_matrix = array3d<std::complex<double>>(num_atoms, kmax, local_num_atoms);
+
+  if (jmax > 1) {
+    dl_matrix = array3d<std::complex<double>>(num_atoms, kmax, local_num_atoms);
+  }
 
   for (auto i{0}; i < global_position_index.size(); i++) {
     lsms::calculate_madelung_matrix(num_atoms,
-        global_position_index[i], i, lmax, eta, scaling_factor, r_brav,
-        atom_position, rslat, rslatsq, knlat, knlatsq, madsum, dl_matrix);
+                                    global_position_index[i], i, lmax, eta, scaling_factor, r_brav,
+                                    atom_position, rslat, rslatsq, knlat, knlatsq, madsum, dl_matrix);
   }
 
   // 5. Dl factors
-  dl_factor = lsms::calculate_dl_factor(lmax);
+  if (jmax > 1) {
+    dl_factor = lsms::calculate_dl_factor(lmax);
+  }
+
 }
 
 double lsms::MultipoleMadelung::getMadSum(int i, int j) const {
