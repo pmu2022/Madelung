@@ -9,6 +9,14 @@ This is the program that will be used for the C++ programming Course
 Introduction
 ============
 
+
+External Project
+================
+
+- Google tests
+
+- https://github.com/Orphis/boost-cmake
+
 Resources
 =========
 

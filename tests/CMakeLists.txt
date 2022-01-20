@@ -55,22 +55,21 @@ target_link_libraries(multi_array_test PUBLIC MultipoleMadelung)
 target_link_libraries(multi_array_test PUBLIC gtest_main)
 
 # 7. Boost
-find_package(Boost
-        REQUIRED)
-
 add_executable(
-        boost_test multi_array_test.cpp
+        boost_test boost_test.cpp
 )
 target_link_libraries(boost_test PUBLIC multipole_madelung)
 target_link_libraries(boost_test PUBLIC MultipoleMadelung)
 target_link_libraries(boost_test PUBLIC gtest_main)
+target_link_libraries(boost_test PUBLIC Boost::math)
 target_link_libraries(boost_test PUBLIC Boost::boost)
-target_link_libraries(boost_test PUBLIC )
 
 # Discover all tests
 include(GoogleTest)
 gtest_discover_tests(legendre_test)
 gtest_discover_tests(spherical_harmonics_test)
+gtest_discover_tests(madelung_test)
 gtest_discover_tests(gaunt_factor_test)
 gtest_discover_tests(regression_test)
 gtest_discover_tests(multi_array_test)
+gtest_discover_tests(boost_test)
