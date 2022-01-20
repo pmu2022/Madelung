@@ -54,6 +54,19 @@ target_link_libraries(multi_array_test PUBLIC multipole_madelung)
 target_link_libraries(multi_array_test PUBLIC MultipoleMadelung)
 target_link_libraries(multi_array_test PUBLIC gtest_main)
 
+# 7. Boost
+find_package(Boost
+        REQUIRED)
+
+add_executable(
+        boost_test multi_array_test.cpp
+)
+target_link_libraries(boost_test PUBLIC multipole_madelung)
+target_link_libraries(boost_test PUBLIC MultipoleMadelung)
+target_link_libraries(boost_test PUBLIC gtest_main)
+target_link_libraries(boost_test PUBLIC Boost::boost)
+target_link_libraries(boost_test PUBLIC )
+
 # Discover all tests
 include(GoogleTest)
 gtest_discover_tests(legendre_test)
