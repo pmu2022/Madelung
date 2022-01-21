@@ -61,8 +61,15 @@ add_executable(
 target_link_libraries(boost_test PUBLIC multipole_madelung)
 target_link_libraries(boost_test PUBLIC MultipoleMadelung)
 target_link_libraries(boost_test PUBLIC gtest_main)
-target_link_libraries(boost_test PUBLIC Boost::math)
 target_link_libraries(boost_test PUBLIC Boost::boost)
+
+# 8. Math libary wrapper
+add_executable(
+        math_test math_test.cpp
+)
+target_link_libraries(math_test PUBLIC multipole_madelung)
+target_link_libraries(math_test PUBLIC MultipoleMadelung)
+target_link_libraries(math_test PUBLIC gtest_main)
 
 # Discover all tests
 include(GoogleTest)
@@ -73,3 +80,4 @@ gtest_discover_tests(gaunt_factor_test)
 gtest_discover_tests(regression_test)
 gtest_discover_tests(multi_array_test)
 gtest_discover_tests(boost_test)
+gtest_discover_tests(math_test)

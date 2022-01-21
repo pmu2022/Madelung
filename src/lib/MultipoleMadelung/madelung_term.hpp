@@ -10,7 +10,7 @@
 #include <numeric>
 #include <algorithm>
 
-#include "spherical_harmonics.hpp"
+#include "spherical_harmonics.h"
 
 #include "common.hpp"
 #include "utils.hpp"
