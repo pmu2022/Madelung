@@ -160,3 +160,5 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
+venv/**
+__pycache__
