@@ -71,6 +71,14 @@ target_link_libraries(math_test PUBLIC multipole_madelung)
 target_link_libraries(math_test PUBLIC MultipoleMadelung)
 target_link_libraries(math_test PUBLIC gtest_main)
 
+# 9. Multipole moments tests
+add_executable(
+        multipole_moments_tests multipole_moments_tests.cpp
+)
+target_link_libraries(multipole_moments_tests PUBLIC multipole_madelung)
+target_link_libraries(multipole_moments_tests PUBLIC MultipoleMadelung)
+target_link_libraries(multipole_moments_tests PUBLIC gtest_main)
+
 # Discover all tests
 include(GoogleTest)
 gtest_discover_tests(legendre_test)

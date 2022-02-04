@@ -6,6 +6,17 @@
 #define SRC_LIB_MULTIPOLEMADELUNG_MULTIPOLEMOMENTS_HPP
 
 
+namespace lsms {
+
+  namespace multipole_moms {
+
+
+
+  }
+  
+}
+
+
 class MultipoleMoments {
 
 };
