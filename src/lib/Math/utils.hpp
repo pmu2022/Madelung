@@ -22,6 +22,44 @@ auto norm_sq(Iter_T first, Iter_T last) {
   return std::inner_product(first, last, first, 0.0);
 }
 
+namespace lsms {
+
+  namespace math {
+
+    template<typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value, T>::type>
+    inline constexpr T pow(const T base, unsigned const exponent) {
+      return (exponent == 0) ? 1 : (base * pow(base, exponent - 1));
+    }
+
+    template<typename T>
+    std::vector<double> linspace(T start_in, T end_in, std::size_t num_in) {
+
+      std::vector<double> linspaced;
+
+      double start = static_cast<double>(start_in);
+      double end = static_cast<double>(end_in);
+      double num = static_cast<double>(num_in);
+
+      if (num == 0) { return linspaced; }
+      if (num == 1) {
+        linspaced.push_back(start);
+        return linspaced;
+      }
+
+      double delta = (end - start) / (num - 1);
+
+      for (int i = 0; i < num - 1; ++i) {
+        linspaced.push_back(start + delta * i);
+      }
+
+      // Ensure that start and end are exactly the same as the input
+      linspaced.push_back(end);
+      return linspaced;
+    }
+
+  }
+
+}
 
 /**
  *

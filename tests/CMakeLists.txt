@@ -4,6 +4,16 @@
 # Tests
 #
 
+# Copy test files
+
+add_custom_target(copy-test-files ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/RhoTildaL)
+add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/RhoTildaL
+        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/data/RhoTildaL
+        ${CMAKE_CURRENT_BINARY_DIR}/RhoTildaL
+        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/data/RhoTildaL)
+
+
+
 find_package(GSL REQUIRED)
 
 # 1. Test associated legendre polynoms
@@ -78,6 +88,7 @@ add_executable(
 target_link_libraries(multipole_moments_tests PUBLIC multipole_madelung)
 target_link_libraries(multipole_moments_tests PUBLIC MultipoleMadelung)
 target_link_libraries(multipole_moments_tests PUBLIC gtest_main)
+add_dependencies(multipole_moments_tests copy-test-files)
 
 # Discover all tests
 include(GoogleTest)

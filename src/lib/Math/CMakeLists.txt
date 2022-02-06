@@ -16,6 +16,8 @@ target_sources(MultipoleMadelung PUBLIC
         legendre.f90
         legendre.h
         legendre.hpp
+        integrator.hpp
+        utils.hpp
         spherical_harmonics.f90
         spherical_harmonics.hpp
         spherical_harmonics.cpp
