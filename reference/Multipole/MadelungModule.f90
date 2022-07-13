@@ -279,6 +279,7 @@ contains
          nullify(factmat)
       endif
       !
+      print *, "ETA:", eta
       do i = 1, LocalNumAtoms
          !     ================================================================
          !     set up the generalized Madelung matrix..........................
@@ -287,13 +288,14 @@ contains
          !     ----------------------------------------------------------------
       enddo
 
-      block
-         integer :: i
-         do i = 1, kmax_mad
-            print *, DL_matrix(1, i, 1)
-         end do
-      end block
-
+      if (jmax_mad > 1) then
+         block
+            integer :: i
+            do i = 1, kmax_mad
+               print *, DL_matrix(1, i, 1)
+            end do
+         end block
+      end if
 
       !
       if (jmax_mad > 1) then
@@ -366,10 +368,15 @@ contains
       eta = HALF + 0.1d0 * max(a1, a2, a3) / sfac
       !
       sfac = sfac / PI2
+
+      !print *, "SFAC", sfac
+
       !
       done = .false.
       iter = 0
       do while (.not. done)
+         !print *, "SFAC", iter, sfac, nknlat, nrslat
+
          iter = iter + 1
          !     ================================================================
          !     scale the Bravais lattice and the reciprical lattice.
@@ -405,11 +412,12 @@ contains
          !     ----------------------------------------------------------------
          call getkncut(vbrak(1:3, 1), vbrak(1:3, 2), vbrak(1:3, 3), kncut, nm1, nm2, nm3)
          call numlat(vbrak, kncut, nm1, nm2, nm3, nknlat)
+         !print *, vbrak(1,1), vbrak(2,2), vbrak(3,3)
+         !print *, nm1, nm2, nm3
 
          !if(PrintLevel.ge.1) then
          !   print *, "ALAT", vbrar(1,1), vbrar(2,2), vbrar(3,3), eta
          !   print *, "RS", rscut, "KN", kncut, "RSLAT", nrslat, "KNLAT", nknlat, "SC", sfac
-         !   print *, nm1, nm2, nm3
          !endif
 
          !     ----------------------------------------------------------------
@@ -898,7 +906,7 @@ contains
       r(1) = a1(1) * a1(1) + a1(2) * a1(2) + a1(3) * a1(3)
       term = ONE
       nm1 = 0
-      do while(term.gt.HALF * epsi)
+      do while(term>HALF * epsi)
          nm1 = nm1 + 1
          rm2 = nm1 * nm1 * r(1)
          !     term=exp(-fac*rm2)/rm2
@@ -908,7 +916,7 @@ contains
       r(2) = a2(1) * a2(1) + a2(2) * a2(2) + a2(3) * a2(3)
       term = ONE
       nm2 = 0
-      do while(term.gt.HALF * epsi)
+      do while(term>HALF * epsi)
          nm2 = nm2 + 1
          rm2 = nm2 * nm2 * r(2)
          !     term=exp(-fac*rm2)/rm2
@@ -918,7 +926,7 @@ contains
       r(3) = a3(1) * a3(1) + a3(2) * a3(2) + a3(3) * a3(3)
       term = ONE
       nm3 = 0
-      do while(term.gt.HALF * epsi)
+      do while(term>HALF * epsi)
          nm3 = nm3 + 1
          rm2 = nm3 * nm3 * r(3)
          !     term=exp(-fac*rm2)/rm2

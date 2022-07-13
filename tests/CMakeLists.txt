@@ -56,6 +56,13 @@ target_link_libraries(regression_test PUBLIC multipole_madelung)
 target_link_libraries(regression_test PUBLIC MultipoleMadelung)
 target_link_libraries(regression_test PUBLIC gtest_main)
 
+add_executable(
+        regression_supercell_test regression_supercell_test.cpp
+)
+target_link_libraries(regression_supercell_test PUBLIC multipole_madelung)
+target_link_libraries(regression_supercell_test PUBLIC MultipoleMadelung)
+target_link_libraries(regression_supercell_test PUBLIC gtest_main)
+
 # 6. Test Madelung potentials
 add_executable(
         multi_array_test multi_array_test.cpp
@@ -97,6 +104,7 @@ gtest_discover_tests(spherical_harmonics_test)
 gtest_discover_tests(madelung_test)
 gtest_discover_tests(gaunt_factor_test)
 gtest_discover_tests(regression_test)
+gtest_discover_tests(regression_supercell_test)
 gtest_discover_tests(multi_array_test)
 gtest_discover_tests(boost_test)
 gtest_discover_tests(math_test)
