@@ -1,0 +1,22 @@
+name: run the tests
+
+on: [push]
+
+env:
+  BUILD_TYPE: Release
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: boost
+      run: sudo apt-get update && sudo apt-get install -y libboost-math1.65-dev
+    - name: mkdir
+      run: mkdir -P build
+    - name: cmake build
+      run: cmake -DUSE_BOOST=ON -Bbuild -H.
+    - name: cmake make
+      run: cmake --build build/ --target all
+    - name: run tests
+      run: ctest --test-dir build
